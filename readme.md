@@ -7,7 +7,7 @@ A local HTTP proxy that forwards requests to a remote API and supports mocking v
 1. **Install dependencies**
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. **Configure environment**
@@ -25,8 +25,8 @@ A local HTTP proxy that forwards requests to a remote API and supports mocking v
 | Variable     | Description                    | Default |
 | ------------| ------------------------------ | ------- |
 | `PORT`      | Port the proxy listens on      | `5050`  |
-| `TARGET`    | Upstream API base URL          | `https://apigw-dev-maxit.gos.orange.com` |
-| `API_PREFIX`| Path prefix for proxied routes | `/telco/api` |
+| `TARGET`    | Upstream API base URL          | `https://example.com` |
+| `API_PREFIX`| Path prefix for proxied routes | `/api` |
 
 Values are read from a `.env` file in the project root (see `.env.example`). Omitted variables use the defaults above.
 
@@ -35,14 +35,14 @@ Values are read from a `.env` file in the project root (see `.env.example`). Omi
 - **Development** (with ts-node):
 
   ```bash
-  npm run dev
+  pnpm dev
   ```
 
 - **Production** (compiled):
 
   ```bash
-  npm run build
-  npm start
+  pnpm build
+  pnpm start
   ```
 
 The proxy will log the local URL and upstream target on startup.

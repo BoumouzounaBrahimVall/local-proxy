@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 
 dotenv.config();
 
@@ -10,6 +10,6 @@ function getEnv(key: string, defaultValue: string): string {
 
 export const config = {
   port: parseInt(getEnv("PORT", "5050"), 10),
-  target: getEnv("TARGET", "https://apigw-dev-maxit.gos.orange.com"),
-  apiPrefix: getEnv("API_PREFIX", "/telco/api"),
+  target: getEnv("TARGET", "https://example.com"),
+  apiPrefix: getEnv("API_PREFIX", "/api"),
 } as const;

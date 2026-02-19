@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import * as fs from "fs";
+import * as path from "path";
 import { Response } from "express";
 import type { Config, Scenario } from "./types";
 
@@ -10,7 +10,8 @@ export function loadScenarios(): Config {
     console.warn("⚠ scenarios.json not found");
     return { rules: [] };
   }
-  return JSON.parse(fs.readFileSync(SCENARIOS_PATH, "utf-8"));
+  const raw = fs.readFileSync(SCENARIOS_PATH, "utf-8");
+  return JSON.parse(raw) as Config;
 }
 
 export function respondScenario(res: Response, scenario: Scenario): Response {
