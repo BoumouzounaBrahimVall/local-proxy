@@ -1,0 +1,45 @@
+{
+  "rules": [
+    {
+      "method": "POST",
+      "match": "/v1/profile/lines/balance",
+      "enabled": true,
+      "active_scenario": "prepaid_no_bills",
+      "scenarios": {
+        "error500": {
+          "status": 500,
+          "json": {"message": "Internal Server Error"}
+        },
+        "slow": {
+          "status": 200,
+          "file": "fixtures/prepaid_no_bills.json",
+          "delay": 3
+        },
+        "prepaid_no_bills": {
+          "status": 200,
+          "file": "fixtures/prepaid_no_bills.json"
+        },
+        "prepaid_with_bills": {
+          "status": 200,
+          "file": "fixtures/prepaid_with_bills.json"
+        },
+        "prepaid_0_ballance_with_bills": {
+          "status": 200,
+          "file": "fixtures/prepaid_0_ballance_with_bills.json"
+        },
+        "prepaid_0_ballance_0_bills": {
+          "status": 200,
+          "file": "fixtures/prepaid_0_ballance_0_bills.json"
+        },
+        "postpaid_no_bills": {
+          "status": 200,
+          "file": "fixtures/postpaid_no_bills.json"
+        },
+        "postpaid_with_bills": {
+          "status": 200,
+          "file": "fixtures/postpaid_with_bills.json"
+        }
+      }
+    }
+  ]
+}
