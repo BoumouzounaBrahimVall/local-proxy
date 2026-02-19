@@ -5,7 +5,6 @@ import { createProxyMiddlewareFactory } from "./middleware/proxyMiddleware";
 
 export function createApp() {
   const app = express();
-  app.use(express.json());
 
   app.use(
     config.apiPrefix,
@@ -14,7 +13,7 @@ export function createApp() {
 
   app.use(
     config.apiPrefix,
-    createProxyMiddlewareFactory(config.target)
+    createProxyMiddlewareFactory(config.target, config.apiPrefix)
   );
 
   return app;
