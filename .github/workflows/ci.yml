@@ -1,0 +1,99 @@
+# ============================================================================
+# QUALITY CHECK
+# ============================================================================
+
+name: Quality Check
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "tsconfig*.json"
+      - "vitest.config.*"
+      - "eslint.config.*"
+      - ".github/workflows/**"
+
+# ============================================================================
+# CONFIGURATION
+# ============================================================================
+
+env:
+  NODE_VERSION: "20"
+
+# File patterns that trigger the pipeline (for path filtering on PRs)
+jobs:
+  # --------------------------------------------------------------------------
+  # Lint & type check
+  # --------------------------------------------------------------------------
+  lint-and-types:
+    name: Lint and type check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+          pnpm --version
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check package.json is normalized
+        run: |
+          pnpm add -D --ignore-scripts dedupe@4.0.1
+          pnpm remove dedupe
+          git diff --exit-code package.json pnpm-lock.yaml || (echo "package.json or pnpm-lock.yaml is not normalized. Add packages with pnpm." && exit 1)
+
+      - name: Type check
+        run: pnpm exec tsc --noEmit
+
+      - name: Lint
+        run: pnpm lint
+
+  # --------------------------------------------------------------------------
+  # Test (with coverage)
+  # --------------------------------------------------------------------------
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+          pnpm --version
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test with coverage
+        run: pnpm test:coverage
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 1
