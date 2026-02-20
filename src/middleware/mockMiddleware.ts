@@ -1,44 +1,60 @@
 import { Request, Response, NextFunction } from "express";
-import { loadScenarios, respondScenario } from "../scenarios";
-import type { Config } from "../types";
+import { createScenarioLoader, matchRule } from "../scenarios";
+import type { AppContext } from "../types";
 
-export function createMockMiddleware(apiPrefix: string) {
+export function createMockMiddleware(context: AppContext) {
+  const loader = createScenarioLoader(context.fs, context.basePath);
+
   return (req: Request, res: Response, next: NextFunction): void => {
-    const ruleConfig: Config = loadScenarios();
-    const method = req.method.toUpperCase();
-    const fullPath = req.path;
-
-    for (const rule of ruleConfig.rules ?? []) {
-      if (!rule.enabled) continue;
-      if (rule.method.toUpperCase() !== method) continue;
-
-      const normalizedMatch = rule.match.startsWith("/")
-        ? rule.match
-        : `/${rule.match}`;
-
-      if (fullPath !== normalizedMatch) continue;
-
-      const scenario = rule.scenarios[rule.active_scenario];
-      if (!scenario) {
-        next();
-        return;
-      }
-
-      if (scenario.delay) {
-        setTimeout(
-          () => respondScenario(res, scenario),
-          scenario.delay * 1000
-        );
-        return;
-      }
-
-      console.log(
-        `[MOCKED] ${method} ${apiPrefix}${fullPath} -> ${rule.active_scenario}`
+    let config;
+    try {
+      config = loader.load(context.scenariosPath);
+    } catch (err) {
+      context.logger.error(
+        "[MOCK ERROR]",
+        err instanceof Error ? err.message : err
       );
-      respondScenario(res, scenario);
+      res.status(500).json({
+        error: "Failed to load scenarios",
+        message: err instanceof Error ? err.message : String(err),
+      });
       return;
     }
 
-    next();
+    const match = matchRule(config.rules, req.method, req.path);
+
+    if (!match) {
+      next();
+      return;
+    }
+
+    const { rule, scenario } = match;
+    context.logger.info(
+      `[MOCKED] ${req.method} ${context.apiPrefix}${req.path} -> ${rule.active_scenario}`
+    );
+
+    const respond = () => {
+      if (scenario.file) {
+        const content = loader.getFixture(scenario.file);
+        if (!content) {
+          res
+            .status(500)
+            .json({ error: "Fixture not found", file: scenario.file });
+          return;
+        }
+        res
+          .status(scenario.status ?? 200)
+          .type("application/json")
+          .send(content);
+      } else {
+        res.status(scenario.status ?? 200).json(scenario.json ?? {});
+      }
+    };
+
+    if (scenario.delay) {
+      setTimeout(respond, scenario.delay * 1000);
+    } else {
+      respond();
+    }
   };
 }

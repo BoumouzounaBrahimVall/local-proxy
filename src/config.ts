@@ -1,15 +1,34 @@
 import * as dotenv from "dotenv";
+import { appConfigSchema, cliOptionsSchema } from "./schemas";
+import type { AppConfig, CliOptions } from "./types";
 
 dotenv.config();
 
-function getEnv(key: string, defaultValue: string): string {
-  const value = process.env[key] ?? defaultValue;
-  if (!value) throw new Error(`Missing required env: ${key}`);
-  return value;
+export function parseCliOptions(raw: Record<string, unknown>): CliOptions {
+  const result = cliOptionsSchema.safeParse(raw);
+  if (!result.success) {
+    const errors = result.error.issues.map(
+      (i) => `  ${i.path.join(".")}: ${i.message}`
+    );
+    throw new Error(`Invalid CLI options:\n${errors.join("\n")}`);
+  }
+  return result.data;
 }
 
-export const config = {
-  port: parseInt(getEnv("PORT", "5050"), 10),
-  target: getEnv("TARGET", "https://example.com"),
-  apiPrefix: getEnv("API_PREFIX", "/api"),
-} as const;
+export function createConfig(options: Partial<CliOptions> = {}): AppConfig {
+  const merged = {
+    port: options.port ?? parseInt(process.env["PORT"] ?? "5050", 10),
+    target: options.target ?? process.env["TARGET"],
+    apiPrefix: options.apiPrefix ?? process.env["API_PREFIX"] ?? "/api",
+    scenariosPath: options.scenarios ?? "./scenarios.json",
+  };
+
+  const result = appConfigSchema.safeParse(merged);
+  if (!result.success) {
+    const errors = result.error.issues.map(
+      (i) => `  ${i.path.join(".")}: ${i.message}`
+    );
+    throw new Error(`Invalid configuration:\n${errors.join("\n")}`);
+  }
+  return result.data;
+}

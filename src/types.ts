@@ -1,18 +1,29 @@
-export type Scenario = {
-  status?: number;
-  json?: Record<string, unknown>;
-  file?: string;
-  delay?: number;
-};
+export type {
+  AppConfig,
+  CliOptions,
+  Scenario,
+  Rule,
+  ScenariosConfig,
+} from "./schemas";
 
-export type Rule = {
-  method: string;
-  match: string;
-  enabled: boolean;
-  active_scenario: string;
-  scenarios: Record<string, Scenario>;
-};
+export interface Logger {
+  info(message: string, ...args: unknown[]): void;
+  warn(message: string, ...args: unknown[]): void;
+  error(message: string, ...args: unknown[]): void;
+}
 
-export type Config = {
-  rules: Rule[];
-};
+export interface FileSystem {
+  existsSync(path: string): boolean;
+  readFileSync(path: string, encoding: BufferEncoding): string;
+  writeFileSync(path: string, data: string): void;
+}
+
+export interface AppContext {
+  port: number;
+  target: string;
+  apiPrefix: string;
+  scenariosPath: string;
+  logger: Logger;
+  fs: FileSystem;
+  basePath: string;
+}

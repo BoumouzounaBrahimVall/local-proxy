@@ -1,116 +1,93 @@
 # Local Proxy
 
-A local HTTP proxy that sits between your frontend and a remote API gateway. It lets you **mock specific endpoints** with scenario-based responses while **transparently forwarding** everything else to the real backend.
+A local development proxy with scenario-based mocking. Mock specific API endpoints while forwarding everything else to a real backend.
 
-## How it works
+## Features
 
+- Mock specific endpoints with configurable scenarios
+- Transparent proxy for unmatched requests
+- Hot-reload scenarios without restart
+- Delay simulation for slow responses
+- File-based fixture responses
+- TypeScript support with full type inference
+- Zod validation for configuration
+
+## Installation
+
+```bash
+# Global installation
+npm install -g local-proxy
+
+# Or use with npx
+npx local-proxy --target https://api.example.com
 ```
-Browser / App
-      │
-      ▼
-┌─────────────┐
-│ Local Proxy │  localhost:5050
-│             │
-│  1. Mock    │  ← matches rules in scenarios.json → returns fixture
-│  2. Proxy   │  ← everything else → forwards to TARGET
-└─────────────┘
-      │
-      ▼
-  Remote API
+
+## CLI Usage
+
+```bash
+local-proxy [options]
+
+Options:
+  -t, --target <url>       Upstream API URL (required)
+  -p, --port <number>      Port to listen on (default: 5050)
+  -a, --api-prefix <path>  API path prefix (default: /api)
+  -s, --scenarios <file>   Path to scenarios.json (default: ./scenarios.json)
+  --init                   Create a scenarios.json template
+  -V, --version            Show version
+  -h, --help               Show help
+
+Examples:
+  local-proxy --target https://api.example.com
+  local-proxy -t https://api.example.com -p 3000 -s ./mocks/scenarios.json
 ```
 
-Every incoming request under `API_PREFIX` goes through two layers in order:
+### Quick Start
 
-1. **Mock layer** — checks `scenarios.json` for a matching rule (method + path). If a rule is enabled and has an active scenario, the proxy responds locally without hitting the backend.
-2. **Proxy layer** — if no mock matched, the request is forwarded as-is to the remote `TARGET`.
+```bash
+# Create a scenarios.json template
+local-proxy --init
 
-## Setup
+# Start the proxy
+local-proxy --target https://api.example.com
+```
 
-1. **Install dependencies**
+## Configuration
 
-   ```bash
-   pnpm install
-   ```
+### Environment Variables
 
-2. **Configure environment**
+| Variable     | Description                    | Default               |
+|--------------|--------------------------------|-----------------------|
+| `PORT`       | Port the proxy listens on      | `5050`                |
+| `TARGET`     | Upstream API base URL          | -                     |
+| `API_PREFIX` | Path prefix for proxied routes | `/api`                |
 
-   ```bash
-   cp .env.example .env
-   ```
-
-   Edit `.env` with your values (see [Environment variables](#environment-variables)).
-
-## Environment variables
-
-| Variable     | Description                    | Default                                   |
-| ------------ | ------------------------------ | ----------------------------------------- |
-| `PORT`       | Port the proxy listens on      | `5050`                                    |
-| `TARGET`     | Upstream API base URL          | `https://example.com`  |
-| `API_PREFIX` | Path prefix for proxied routes | `/api`                              |
-
-Values are read from `.env` in the project root. Omitted variables use the defaults above.
-
-## Run
-
-- **Development** (with ts-node):
-
-  ```bash
-  pnpm dev
-  ```
-
-- **Production** (compiled):
-
-  ```bash
-  pnpm build
-  pnpm start
-  ```
-
-The proxy logs the local URL and upstream target on startup.
-
-## Scenario configuration
-
-Mock rules live in `scenarios.json` at the project root. Each rule defines:
-
-| Field              | Type     | Description                                          |
-| ------------------ | -------- | ---------------------------------------------------- |
-| `method`           | string   | HTTP method to match (`GET`, `POST`, etc.)           |
-| `match`            | string   | Path after `API_PREFIX` (e.g. `/v1/profile/lines/balance`) |
-| `enabled`          | boolean  | Toggle the rule on/off without deleting it           |
-| `active_scenario`  | string   | Key of the scenario to use for responses             |
-| `scenarios`        | object   | Map of named scenarios (see below)                   |
-
-Each **scenario** can have:
-
-| Field    | Type   | Description                                      |
-| -------- | ------ | ------------------------------------------------ |
-| `status` | number | HTTP status code (default `200`)                 |
-| `json`   | object | Inline JSON response body                        |
-| `file`   | string | Path to a fixture file (relative to project root)|
-| `delay`  | number | Artificial delay in **seconds** before responding|
-
-### Example
+### scenarios.json
 
 ```json
 {
   "rules": [
     {
       "method": "POST",
-      "match": "/v1/profile/lines/balance",
+      "match": "/v1/users",
       "enabled": true,
-      "active_scenario": "prepaid_no_bills",
+      "active_scenario": "success",
       "scenarios": {
-        "error500": {
-          "status": 500,
-          "json": { "message": "Internal Server Error" }
+        "success": {
+          "status": 201,
+          "json": { "id": 1, "name": "John" }
+        },
+        "error": {
+          "status": 400,
+          "json": { "error": "Validation failed" }
         },
         "slow": {
           "status": 200,
-          "file": "fixtures/prepaid_no_bills.json",
-          "delay": 3
+          "delay": 3,
+          "json": { "id": 1 }
         },
-        "prepaid_no_bills": {
+        "fromFile": {
           "status": 200,
-          "file": "fixtures/prepaid_no_bills.json"
+          "file": "fixtures/user.json"
         }
       }
     }
@@ -118,40 +95,117 @@ Each **scenario** can have:
 }
 ```
 
-To switch scenarios, change `active_scenario` and restart (or the change takes effect on the next request since the file is re-read each time).
+### Scenario Options
 
-## Project structure
+| Field    | Type   | Description                          |
+|----------|--------|--------------------------------------|
+| `status` | number | HTTP status code (default: 200)      |
+| `json`   | object | JSON response body                   |
+| `file`   | string | Path to fixture file (relative)      |
+| `delay`  | number | Response delay in seconds            |
+
+### Rule Options
+
+| Field            | Type    | Description                          |
+|------------------|---------|--------------------------------------|
+| `method`         | string  | HTTP method (GET, POST, PUT, etc.)   |
+| `match`          | string  | Path to match                        |
+| `enabled`        | boolean | Whether rule is active               |
+| `active_scenario`| string  | Name of the scenario to use          |
+| `scenarios`      | object  | Map of scenario name to scenario     |
+
+## Library Usage
+
+Use programmatically in your own code:
+
+```typescript
+import { createApp, createConfig } from 'local-proxy';
+import * as fs from 'fs';
+
+const config = createConfig({
+  target: 'https://api.example.com',
+  port: 5050,
+  apiPrefix: '/api',
+  scenarios: './scenarios.json',
+});
+
+const app = createApp({
+  ...config,
+  logger: console,
+  fs,
+  basePath: process.cwd(),
+});
+
+app.listen(config.port, () => {
+  console.log(`Proxy running on port ${config.port}`);
+});
+```
+
+### Exported Functions
+
+- `createApp(context)` - Create an Express app with mock and proxy middleware
+- `createConfig(options)` - Create and validate configuration
+- `parseCliOptions(raw)` - Parse and validate CLI options
+- `createScenarioLoader(fs, basePath)` - Create a scenario loader
+- `matchRule(rules, method, path)` - Find matching rule for a request
+
+### Exported Types
+
+- `AppConfig` - Runtime configuration
+- `AppContext` - Full context with dependencies
+- `CliOptions` - CLI options
+- `Scenario` - Single scenario definition
+- `Rule` - Mock rule definition
+- `ScenariosConfig` - Full scenarios.json structure
+- `Logger` - Logger interface
+- `FileSystem` - File system interface
+
+### Zod Schemas
+
+All types are validated at runtime using Zod. Schemas are exported for custom validation:
+
+```typescript
+import { scenariosConfigSchema } from 'local-proxy';
+
+const result = scenariosConfigSchema.safeParse(myConfig);
+if (!result.success) {
+  console.error(result.error.issues);
+}
+```
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run in development mode
+pnpm dev -- --target https://api.example.com
+
+# Run tests
+pnpm test
+
+# Run tests with coverage
+pnpm test:coverage
+
+# Build for production
+pnpm build
+```
+
+## How It Works
 
 ```
-├── .env.example                   # Template for environment variables
-├── .env                           # Local env config (git-ignored)
-├── scenarios.json                 # Mock rules and scenarios
-├── fixtures/                      # JSON fixture files referenced by scenarios
-├── src/
-│   ├── index.ts                   # Entry point — starts the server
-│   ├── app.ts                     # Express app setup (mock → proxy)
-│   ├── config.ts                  # Loads env variables via dotenv
-│   ├── types.ts                   # Shared types (Scenario, Rule, Config)
-│   ├── scenarios.ts               # Loads scenarios.json and builds responses
-│   ├── reset.d.ts                 # ts-reset global type improvements
-│   └── middleware/
-│       ├── mockMiddleware.ts      # Intercepts requests matching mock rules
-│       └── proxyMiddleware.ts     # Forwards unmatched requests to TARGET
-└── tsconfig.json                  # Extends @tsconfig/strictest
+Browser/App  →  Local Proxy (localhost:5050)  →  Remote API
+                        │
+                        ├─ Matched rule → Return mock fixture
+                        └─ No match → Forward to TARGET
 ```
 
-## Known issues and gotchas
+1. Request comes in to the proxy
+2. Mock middleware checks if any enabled rule matches the method and path
+3. If matched, returns the configured scenario response (with optional delay)
+4. If not matched, proxy middleware forwards to the target server
 
-### Do not use `express.json()` before the proxy
+## License
 
-Adding `express.json()` (or any body-parsing middleware) before the proxy layer **will cause `ECONNRESET` errors** on proxied requests. The body parser consumes the request stream; when `http-proxy` then tries to pipe the (now empty) stream to the upstream server, the connection resets.
-
-The mock middleware only inspects `req.method` and `req.path` — it never reads the body — so body parsing is not needed.
-
-### `secure: false` on the proxy
-
-The proxy agent uses `secure: false` because the dev API gateway may present certificates that Node.js does not trust by default (corporate CA, self-signed, etc.). For production usage, set `secure: true` and provide the correct CA bundle.
-
-### `keepAlive: false` on the HTTPS agent
-
-Each proxied request creates a fresh TCP connection. This avoids `ECONNRESET` errors caused by the backend (or an intermediary gateway) closing idle connections that the proxy tries to reuse.
+ISC

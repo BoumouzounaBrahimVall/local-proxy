@@ -1,33 +1,69 @@
-import * as fs from "fs";
 import * as path from "path";
-import { Response } from "express";
-import type { Config, Scenario } from "./types";
+import { scenariosConfigSchema } from "./schemas";
+import type { ScenariosConfig, Rule, Scenario, FileSystem } from "./types";
 
-const SCENARIOS_PATH = path.join(__dirname, "..", "scenarios.json");
-
-export function loadScenarios(): Config {
-  if (!fs.existsSync(SCENARIOS_PATH)) {
-    console.warn("⚠ scenarios.json not found");
-    return { rules: [] };
-  }
-  const raw = fs.readFileSync(SCENARIOS_PATH, "utf-8");
-  return JSON.parse(raw) as Config;
+export interface ScenarioLoader {
+  load(scenariosPath: string): ScenariosConfig;
+  getFixture(filePath: string): string | null;
 }
 
-export function respondScenario(res: Response, scenario: Scenario): Response {
-  const status = scenario.status ?? 200;
+export function createScenarioLoader(
+  fs: FileSystem,
+  basePath: string
+): ScenarioLoader {
+  return {
+    load(scenariosPath: string): ScenariosConfig {
+      const fullPath = path.resolve(basePath, scenariosPath);
+      if (!fs.existsSync(fullPath)) {
+        return { rules: [] };
+      }
 
-  if (scenario.file) {
-    const filePath = path.join(__dirname, "..", scenario.file);
-    if (!fs.existsSync(filePath)) {
-      return res.status(500).json({
-        error: "Fixture file not found",
-        file: scenario.file,
-      });
-    }
-    const raw = fs.readFileSync(filePath, "utf-8");
-    return res.status(status).type("application/json").send(raw);
+      const raw = fs.readFileSync(fullPath, "utf-8");
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        throw new Error(`Invalid JSON in ${scenariosPath}`);
+      }
+
+      const result = scenariosConfigSchema.safeParse(parsed);
+      if (!result.success) {
+        const errors = result.error.issues.map(
+          (i) => `  ${i.path.join(".")}: ${i.message}`
+        );
+        throw new Error(`Invalid scenarios config:\n${errors.join("\n")}`);
+      }
+      return result.data;
+    },
+
+    getFixture(filePath: string): string | null {
+      const fullPath = path.resolve(basePath, filePath);
+      if (!fs.existsSync(fullPath)) return null;
+      return fs.readFileSync(fullPath, "utf-8");
+    },
+  };
+}
+
+export function matchRule(
+  rules: Rule[],
+  method: string,
+  requestPath: string
+): { rule: Rule; scenario: Scenario } | null {
+  const upperMethod = method.toUpperCase();
+
+  for (const rule of rules) {
+    if (!rule.enabled) continue;
+    if (rule.method !== upperMethod) continue;
+
+    const normalizedMatch = rule.match.startsWith("/")
+      ? rule.match
+      : `/${rule.match}`;
+    if (requestPath !== normalizedMatch) continue;
+
+    const scenario = rule.scenarios[rule.active_scenario];
+    if (!scenario) continue;
+
+    return { rule, scenario };
   }
-
-  return res.status(status).json(scenario.json ?? {});
+  return null;
 }

@@ -1,27 +1,59 @@
 {
   "name": "local-proxy",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "ts-node src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
+  "description": "Local development proxy with scenario-based mocking",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "local-proxy": "./dist/cli.js"
   },
-  "keywords": [],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "templates",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "ts-node src/cli.ts",
+    "build": "tsc",
+    "start": "node dist/cli.js",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "pnpm run build"
+  },
+  "keywords": [
+    "proxy",
+    "mock",
+    "api",
+    "development",
+    "testing",
+    "scenarios"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "commander": "^14.0.3",
     "dotenv": "^16.4.5",
     "express": "^5.2.1",
-    "http-proxy-middleware": "^3.0.5"
+    "http-proxy-middleware": "^3.0.5",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@total-typescript/ts-reset": "^0.6.1",
     "@tsconfig/strictest": "^2.0.0",
     "@types/express": "^5.0.6",
     "@types/node": "^25.3.0",
-    "@total-typescript/ts-reset": "^0.6.1",
+    "@types/supertest": "^6.0.3",
+    "@vitest/coverage-v8": "4.0.18",
+    "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }

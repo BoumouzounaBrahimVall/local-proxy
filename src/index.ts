@@ -1,10 +1,23 @@
-import { config } from "./config";
-import { createApp } from "./app";
+export { createApp } from "./app";
+export { createConfig, parseCliOptions } from "./config";
+export { createScenarioLoader, matchRule } from "./scenarios";
+export type { ScenarioLoader } from "./scenarios";
 
-const app = createApp();
+export {
+  cliOptionsSchema,
+  appConfigSchema,
+  scenarioSchema,
+  ruleSchema,
+  scenariosConfigSchema,
+} from "./schemas";
 
-app.listen(config.port, () => {
-  console.log("🚀 Local proxy running at:");
-  console.log(`http://localhost:${config.port}${config.apiPrefix}`);
-  console.log(`Proxying to: ${config.target}${config.apiPrefix}`);
-});
+export type {
+  AppConfig,
+  CliOptions,
+  Scenario,
+  Rule,
+  ScenariosConfig,
+  Logger,
+  FileSystem,
+  AppContext,
+} from "./types";

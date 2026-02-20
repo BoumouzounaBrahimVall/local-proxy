@@ -1,0 +1,33 @@
+{
+  "rules": [
+    {
+      "method": "GET",
+      "match": "/v1/example",
+      "enabled": true,
+      "active_scenario": "success",
+      "scenarios": {
+        "success": {
+          "status": 200,
+          "json": {
+            "message": "Hello from mock!",
+            "timestamp": "2024-01-01T00:00:00Z"
+          }
+        },
+        "error": {
+          "status": 500,
+          "json": {
+            "error": "Internal Server Error",
+            "code": "INTERNAL_ERROR"
+          }
+        },
+        "slow": {
+          "status": 200,
+          "delay": 3,
+          "json": {
+            "message": "Slow response"
+          }
+        }
+      }
+    }
+  ]
+}
