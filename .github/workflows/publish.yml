@@ -1,0 +1,37 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.20.0 --activate
+          pnpm --version
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Create release pull request or publish 
+        id: changesets
+        uses: changesets/action@v1
+        with: 
+          publish: pnpm build

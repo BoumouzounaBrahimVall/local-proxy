@@ -26,7 +26,7 @@ on:
 env:
   NODE_VERSION: "20"
 
-# File patterns that trigger the pipeline (for path filtering on PRs)
+
 jobs:
   # --------------------------------------------------------------------------
   # Lint & type check
