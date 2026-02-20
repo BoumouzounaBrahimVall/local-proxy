@@ -1,6 +1,6 @@
 {
   "name": "local-proxy",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Local development proxy with scenario-based mocking",
   "packageManager": "pnpm@10.20.0",
   "main": "./dist/index.js",
