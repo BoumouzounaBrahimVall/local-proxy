@@ -40,7 +40,7 @@ jobs:
       - name: Install pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@latest --activate
+          corepack prepare pnpm@10.20.0 --activate
           pnpm --version
 
       - name: Setup Node.js
@@ -76,7 +76,7 @@ jobs:
       - name: Install pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@latest --activate
+          corepack prepare pnpm@10.20.0 --activate
           pnpm --version
 
       - name: Setup Node.js

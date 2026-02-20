@@ -2,6 +2,7 @@
   "name": "local-proxy",
   "version": "1.0.0",
   "description": "Local development proxy with scenario-based mocking",
+  "packageManager": "pnpm@10.20.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
@@ -48,8 +49,7 @@
   },
   "pnpm": {
     "overrides": {
-      "minimatch": ">=10.2.1",
-      "ajv": ">=8.18.0"
+      "minimatch": ">=10.2.1"
     }
   },
   "devDependencies": {
