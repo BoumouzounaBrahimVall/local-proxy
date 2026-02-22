@@ -15,11 +15,17 @@ A local development proxy with scenario-based mocking. Mock specific API endpoin
 ## Installation
 
 ```bash
-# Global installation
-npm install -g local-proxy
+# Global installation (npm)
+npm install -g @bvbmz/local-proxy
 
-# Or use with npx
-npx local-proxy --target https://api.example.com
+# Global installation (pnpm)
+pnpm add -g @bvbmz/local-proxy
+
+# Global installation (yarn)
+yarn global add @bvbmz/local-proxy
+
+# Or use with npx (no install)
+npx @bvbmz/local-proxy --target https://api.example.com
 ```
 
 ## CLI Usage
