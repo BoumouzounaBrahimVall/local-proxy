@@ -1,5 +1,11 @@
 # local-proxy
 
+## 0.0.3
+
+### Patch Changes
+
+- 831d78e: docs: Update README installation instructions to include npm scope and support for pnpm and yarn
+
 ## 0.0.2
 
 ### Patch Changes
