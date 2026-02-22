@@ -1,5 +1,5 @@
 {
-  "name": "local-proxy",
+  "name": "@bvbmz/local-proxy",
   "version": "0.0.2",
   "description": "Local development proxy with scenario-based mocking",
   "packageManager": "pnpm@10.20.0",
