@@ -18,12 +18,15 @@
   "files": [
     "dist",
     "templates",
-    "README.md"
+    "readme.md"
   ],
   "scripts": {
     "dev": "ts-node src/cli.ts",
     "build": "tsup src/index.ts src/cli.ts --format cjs,esm --dts",
     "start": "node dist/cli.js",
+    "docs:dev": "astro dev --root site",
+    "docs:build": "astro build --root site",
+    "docs:preview": "astro preview --root site",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -54,6 +57,7 @@
     }
   },
   "devDependencies": {
+    "@astrojs/starlight": "^0.38.1",
     "@changesets/cli": "^2.29.8",
     "@eslint/js": "10.0.1",
     "@total-typescript/ts-reset": "^0.6.1",
@@ -62,6 +66,7 @@
     "@types/node": "^25.3.0",
     "@types/supertest": "^6.0.3",
     "@vitest/coverage-v8": "4.0.18",
+    "astro": "^6.0.7",
     "eslint": "10.0.1",
     "globals": "^17.3.0",
     "jiti": "^2.6.1",

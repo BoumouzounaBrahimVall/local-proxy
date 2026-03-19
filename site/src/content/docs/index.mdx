@@ -1,0 +1,149 @@
+---
+title: local-proxy
+description: Scenario-driven local API proxy — mock what you need, forward the rest
+template: splash
+hero:
+  title: |
+    Stop waiting for the backend.
+  tagline: |
+    Mock the endpoints you need. Proxy everything else. Ship your frontend faster.
+  image:
+    file: ../../assets/logo.svg
+    alt: local-proxy logo
+  actions:
+    - text: Get Started
+      link: /local-proxy/getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/BoumouzounaBrahimVall
+      icon: external
+      variant: secondary
+pagefind: false
+---
+
+<div class="lp-grid-bg" aria-hidden="true"></div>
+<div class="lp-hero-glow" aria-hidden="true"></div>
+
+<div class="splash-content-stack">
+  <div class="install-cmd">
+    <span class="dollar">$</span>
+    <code>npm i -g @bvbmz/local-proxy</code>
+  </div>
+
+  <div class="terminal-block">
+    <div class="terminal-bar-row">
+      <div class="terminal-dots">
+        <span class="td" style="background:#f87171"></span>
+        <span class="td" style="background:#fbbf24"></span>
+        <span class="td" style="background:#4ade80"></span>
+      </div>
+      <span class="terminal-bar-title">local-proxy</span>
+    </div>
+    <div><span class="prompt">$</span> <span class="cmd">local-proxy --init</span></div>
+    <div><span class="output">Created scenarios.json</span></div>
+    <div style="margin-top:0.5rem"><span class="prompt">$</span> <span class="cmd">local-proxy --target https://api.example.com</span></div>
+    <div><span class="output">Local proxy running at http://localhost:5050/api</span></div>
+    <div><span class="output">Proxying to: https://api.example.com/api</span></div>
+  </div>
+</div>
+
+<hr class="section-divider" />
+
+<div class="stats-row">
+  <div class="stat-pill">
+    <span class="stat-value">3 lines</span>
+    <span class="stat-label">to get running</span>
+  </div>
+  <div class="stat-pill">
+    <span class="stat-value">0 config</span>
+    <span class="stat-label">to start proxying</span>
+  </div>
+  <div class="stat-pill">
+    <span class="stat-value">7 methods</span>
+    <span class="stat-label">GET POST PUT PATCH DELETE HEAD OPTIONS</span>
+  </div>
+  <div class="stat-pill">
+    <span class="stat-value">Zod</span>
+    <span class="stat-label">validated config</span>
+  </div>
+</div>
+
+<hr class="section-divider" />
+
+## Why you should use it
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+<CardGrid>
+  <Card title="Mock only what matters" icon="rocket">
+    Define named scenarios for specific routes. Everything else goes straight to your real API — no full-blown mock server needed.
+  </Card>
+  <Card title="Switch scenarios instantly" icon="random">
+    Toggle between success, error, and edge-case responses by changing one key in your config. No code changes, no restart.
+  </Card>
+  <Card title="Simulate real-world latency" icon="warning">
+    Add per-scenario delays to stress-test loading states, spinners, and timeouts before your users ever see them.
+  </Card>
+  <Card title="Use fixtures or inline JSON" icon="document">
+    Return data inline for quick tests, or point to fixture files for large, realistic payloads. Your call.
+  </Card>
+  <Card title="Type-safe from CLI to config" icon="approve-check-circle">
+    Every option is validated with Zod at runtime. Typos and bad config are caught before anything starts.
+  </Card>
+  <Card title="Works as a library too" icon="setting">
+    Import `createApp` and `createConfig` into your own Node scripts or test harness. Full programmatic control.
+  </Card>
+</CardGrid>
+
+<hr class="section-divider" />
+
+## How it works
+
+<div class="terminal-block">
+  <div><span class="comment"># Your app calls the proxy</span></div>
+  <div><span class="cmd">App  →  localhost:5050/api/v1/users</span></div>
+  <div style="margin-top:0.75rem"><span class="comment"># Proxy checks your rules</span></div>
+  <div><span class="cmd">   ├─ Rule matches?  →  <span class="output">Return mock scenario</span></span></div>
+  <div><span class="cmd">   └─ No match?      →  Forward to upstream API</span></div>
+</div>
+
+<hr class="section-divider" />
+
+## Quick scenario example
+
+```json
+{
+  "rules": [
+    {
+      "method": "POST",
+      "match": "/v1/checkout",
+      "enabled": true,
+      "active_scenario": "success",
+      "scenarios": {
+        "success": { "status": 200, "json": { "orderId": "abc-123" } },
+        "declined": { "status": 402, "json": { "error": "Card declined" } },
+        "timeout": { "status": 200, "delay": 8, "json": { "orderId": "abc-123" } }
+      }
+    }
+  ]
+}
+```
+
+Switch `"active_scenario"` to `"declined"` or `"timeout"` — no restart needed.
+
+<hr class="section-divider" />
+
+<div class="badge-row">
+  <span class="badge"><span class="dot"></span> TypeScript</span>
+  <span class="badge"><span class="dot"></span> Express</span>
+  <span class="badge"><span class="dot"></span> Zod v4</span>
+  <span class="badge"><span class="dot"></span> Zero telemetry</span>
+  <span class="badge"><span class="dot"></span> ISC License</span>
+</div>
+
+<div class="cta-row" style="justify-content:center; margin-top: 1.5rem;">
+  <a class="cta-primary" href="/local-proxy/getting-started/">Get started →</a>
+  <a class="cta-secondary" href="https://www.npmjs.com/package/@bvbmz/local-proxy">npm ↗</a>
+  <a class="cta-secondary" href="https://github.com/BoumouzounaBrahimVall">GitHub ↗</a>
+</div>

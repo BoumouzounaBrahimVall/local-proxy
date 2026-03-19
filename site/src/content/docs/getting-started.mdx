@@ -1,0 +1,69 @@
+---
+title: Getting Started
+description: Install and run local-proxy in minutes
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Start in under 2 minutes
+
+<div class="terminal-block">
+  <div><span class="prompt">$</span> <span class="cmd">npm install -g @bvbmz/local-proxy</span></div>
+</div>
+
+Or run instantly with `npx`:
+
+<div class="terminal-block">
+  <div><span class="prompt">$</span> <span class="cmd">npx @bvbmz/local-proxy --target https://api.example.com</span></div>
+</div>
+
+<div class="terminal-block">
+  <div><span class="comment"># 1) scaffold config</span></div>
+  <div><span class="prompt">$</span> <span class="cmd">local-proxy --init</span></div>
+  <div><span class="output">Created scenarios.json</span></div>
+  <div style="margin-top:0.6rem"><span class="comment"># 2) run proxy</span></div>
+  <div><span class="prompt">$</span> <span class="cmd">local-proxy --target https://api.example.com</span></div>
+  <div><span class="output">Local proxy running at http://localhost:5050/api</span></div>
+</div>
+
+## Default runtime
+
+- Port: `5050`
+- API prefix: `/api`
+- Scenarios file: `./scenarios.json`
+
+Point your frontend to:
+
+<div class="terminal-block">
+  <div><span class="cmd">http://localhost:5050/api</span></div>
+</div>
+
+## Step-by-step flow
+
+<ol>
+  <li>Install `@bvbmz/local-proxy`.</li>
+  <li>Run `local-proxy --init` to generate `scenarios.json`.</li>
+  <li>Start with `local-proxy --target &lt;your-api-url&gt;`.</li>
+  <li>Switch `active_scenario` values in `scenarios.json` while developing.</li>
+</ol>
+
+## Environment variables
+
+You can configure runtime with env vars:
+
+- `TARGET`
+- `PORT`
+- `API_PREFIX`
+
+CLI flags take precedence over env vars.
+
+## Common next moves
+
+<CardGrid>
+  <Card title="Need full option list?" icon="list-tree">
+    Jump to <a href="/local-proxy/cli-reference/">CLI Reference</a>.
+  </Card>
+  <Card title="Want realistic mocks?" icon="seti:json">
+    Check <a href="/local-proxy/scenarios/">Scenarios</a> and start using fixture files.
+  </Card>
+</CardGrid>

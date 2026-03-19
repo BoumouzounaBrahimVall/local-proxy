@@ -1,0 +1,61 @@
+---
+title: Scenarios
+description: How to define rules and mock responses
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## File structure
+
+`scenarios.json` contains an array of rules:
+
+<div class="terminal-block">
+  <div><span class="cmd">{</span></div>
+  <div><span class="cmd">&nbsp;&nbsp;"rules": [</span></div>
+  <div><span class="cmd">&nbsp;&nbsp;&nbsp;&nbsp;{</span></div>
+  <div><span class="cmd">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"method": "GET",</span></div>
+  <div><span class="cmd">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"match": "/v1/example",</span></div>
+  <div><span class="cmd">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"enabled": true,</span></div>
+  <div><span class="cmd">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"active_scenario": "success",</span></div>
+  <div><span class="cmd">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"scenarios": { ... }</span></div>
+  <div><span class="cmd">&nbsp;&nbsp;&nbsp;&nbsp;}</span></div>
+  <div><span class="cmd">&nbsp;&nbsp;]</span></div>
+  <div><span class="cmd">}</span></div>
+</div>
+
+<div class="terminal-block">
+  <div><span class="comment"># hot workflow</span></div>
+  <div><span class="cmd">Change "active_scenario" from "success" to "error"</span></div>
+  <div><span class="output">See frontend behavior instantly</span></div>
+</div>
+
+## Rule fields
+
+- `method`: HTTP method (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`)
+- `match`: Request path to match
+- `enabled`: Whether the rule is active
+- `active_scenario`: Scenario key to use
+- `scenarios`: Map of scenario definitions
+
+## Scenario fields
+
+- `status`: HTTP status code (optional, default `200`)
+- `json`: Inline JSON response body
+- `file`: Fixture file path (relative to project base path)
+- `delay`: Delay in seconds before response
+
+Each scenario must include at least one of `json` or `file`.
+
+## Best practices
+
+<CardGrid>
+  <Card title="Name scenarios by intent" icon="tag">
+    Use labels like `success`, `validation_error`, `server_error`, `timeout`.
+  </Card>
+  <Card title="Use fixture files for large payloads" icon="seti:folder">
+    Keep mock data in `fixtures/` and reference with `file` for cleaner config.
+  </Card>
+  <Card title="Model user pain early" icon="warning">
+    Add delayed and failing scenarios so UI states are polished before release.
+  </Card>
+</CardGrid>

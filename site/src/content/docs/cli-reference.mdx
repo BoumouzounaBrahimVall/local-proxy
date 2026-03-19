@@ -1,0 +1,54 @@
+---
+title: CLI Reference
+description: Command options and examples
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Usage
+
+<div class="terminal-block">
+  <div><span class="prompt">$</span> <span class="cmd">local-proxy [options]</span></div>
+</div>
+
+<div class="terminal-block">
+  <div><span class="comment"># typical development command</span></div>
+  <div><span class="prompt">$</span> <span class="cmd">local-proxy --target https://api.example.com --port 5050</span></div>
+</div>
+
+## Options
+
+| Option | Description | Default |
+| --- | --- | --- |
+| `-t, --target &lt;url&gt;` | Upstream API URL | Required unless `--init` |
+| `-p, --port &lt;number&gt;` | Port to listen on | `5050` |
+| `-a, --api-prefix &lt;path&gt;` | API path prefix | `/api` |
+| `-s, --scenarios &lt;file&gt;` | Scenarios config file path | `./scenarios.json` |
+| `--init` | Create a `scenarios.json` template | - |
+| `-h, --help` | Show help | - |
+| `-V, --version` | Show version | - |
+
+## Examples
+
+<div class="terminal-block">
+  <div><span class="comment"># basic</span></div>
+  <div><span class="prompt">$</span> <span class="cmd">local-proxy --target https://api.example.com</span></div>
+  <div style="margin-top:0.6rem"><span class="comment"># custom port and scenarios file</span></div>
+  <div><span class="prompt">$</span> <span class="cmd">local-proxy --target https://api.example.com --port 3000 --scenarios ./mocks/scenarios.json</span></div>
+  <div style="margin-top:0.6rem"><span class="comment"># custom API prefix</span></div>
+  <div><span class="prompt">$</span> <span class="cmd">local-proxy --target https://api.example.com --api-prefix /backend</span></div>
+</div>
+
+## Option tips
+
+<CardGrid>
+  <Card title="Use --target in every run" icon="globe">
+    `--target` is required unless you are running only `--init`.
+  </Card>
+  <Card title="Use --scenarios for project layouts" icon="seti:json">
+    Keep mocks in a dedicated folder like `./mocks/scenarios.json`.
+  </Card>
+  <Card title="Use --api-prefix to align with app calls" icon="seti:route">
+    If your app calls `/backend/*`, set `--api-prefix /backend`.
+  </Card>
+</CardGrid>
