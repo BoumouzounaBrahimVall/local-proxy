@@ -16,7 +16,7 @@ const shouldRenderSearch =
   config.pagefind || config.components.Search !== "@astrojs/starlight/components/Search.astro";
 ---
 
-<div class="header">
+<div class="header lp-glass-header">
   <div class="title-wrapper sl-flex">
     <SiteTitle />
   </div>
@@ -45,70 +45,226 @@ const shouldRenderSearch =
 </div>
 
 <style>
-  @layer starlight.core {
-    .header {
-      display: flex;
-      gap: var(--sl-nav-gap);
-      justify-content: space-between;
-      align-items: center;
-      height: 100%;
+@layer starlight.core {
+  /* remove Starlight's solid header background */
+  :global(.top-bar),
+  :global(.site-header),
+  :global(.mobile-header),
+  :global([data-starlight-header]),
+  :global(header) {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .lp-glass-header {
+    display: flex;
+    gap: var(--sl-nav-gap);
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+    position: relative;
+    isolation: isolate;
+
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.14) 0%,
+        rgba(255, 255, 255, 0.06) 100%
+      );
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 1.25rem;
+
+    backdrop-filter: blur(24px) saturate(1.35);
+    -webkit-backdrop-filter: blur(24px) saturate(1.35);
+
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+
+    padding: 0.65rem 1rem;
+  }
+
+  .lp-glass-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 12% 0%, rgba(0, 245, 255, 0.14), transparent 28%),
+      radial-gradient(circle at 88% 0%, rgba(255, 0, 170, 0.12), transparent 26%),
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.16),
+        rgba(255, 255, 255, 0.02)
+      );
+    mix-blend-mode: screen;
+    opacity: 0.9;
+  }
+
+  .lp-glass-header::after {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    border-radius: calc(1.25rem - 1px);
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      transparent 35%,
+      transparent 70%,
+      rgba(255, 255, 255, 0.04) 100%
+    );
+  }
+
+  .lp-glass-header > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .title-wrapper {
+    overflow: clip;
+    padding: 0.25rem;
+    margin: -0.25rem;
+    min-width: 0;
+  }
+
+  .lp-header-right {
+    gap: 1rem;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .social-icons-wrap,
+  .social-icons {
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .social-icons::after {
+    content: "";
+    height: 2rem;
+    border-inline-end: 1px solid rgba(255, 255, 255, 0.16);
+  }
+
+  @media (min-width: 50rem) {
+    :global(:root[data-has-sidebar]) {
+      --__sidebar-pad: calc(2 * var(--sl-nav-pad-x));
     }
 
-    .title-wrapper {
-      /* Prevent long titles overflowing and covering the search and menu buttons on narrow viewports. */
-      overflow: clip;
-      /* Avoid clipping focus ring around link inside title wrapper. */
-      padding: 0.25rem;
-      margin: -0.25rem;
-      min-width: 0;
+    :global(:root:not([data-has-toc])) {
+      --__toc-width: 0rem;
     }
 
-    .lp-header-right {
-      gap: 1rem;
-      align-items: center;
-      flex-shrink: 0;
-    }
+    .lp-glass-header {
+      --__sidebar-width: max(0rem, var(--sl-content-inline-start, 0rem) - var(--sl-nav-pad-x));
+      --__main-column-fr: calc(
+        (
+          100% + var(--__sidebar-pad, 0rem) - var(--__toc-width, var(--sl-sidebar-width)) -
+          (2 * var(--__toc-width, var(--sl-nav-pad-x))) - var(--sl-content-inline-start, 0rem) -
+          var(--sl-content-width)
+        ) / 2
+      );
 
-    .social-icons-wrap,
-    .social-icons {
-      gap: 1rem;
-      align-items: center;
-    }
-    .social-icons::after {
-      content: "";
-      height: 2rem;
-      border-inline-end: 1px solid var(--sl-color-gray-5);
-    }
-
-    @media (min-width: 50rem) {
-      :global(:root[data-has-sidebar]) {
-        --__sidebar-pad: calc(2 * var(--sl-nav-pad-x));
-      }
-      :global(:root:not([data-has-toc])) {
-        --__toc-width: 0rem;
-      }
-      .header {
-        --__sidebar-width: max(0rem, var(--sl-content-inline-start, 0rem) - var(--sl-nav-pad-x));
-        --__main-column-fr: calc(
-          (
-              100% + var(--__sidebar-pad, 0rem) - var(--__toc-width, var(--sl-sidebar-width)) -
-                (2 * var(--__toc-width, var(--sl-nav-pad-x))) - var(--sl-content-inline-start, 0rem) -
-                var(--sl-content-width)
-            ) / 2
-        );
-        display: grid;
-        grid-template-columns:
-          /* 1 (site title): runs up until the main content column’s left edge or the width of the title, whichever is the largest  */
-          minmax(
-            calc(var(--__sidebar-width) + max(0rem, var(--__main-column-fr) - var(--sl-nav-gap))),
-            auto
-          )
-          /* 2 (search box): all free space that is available. */
-          1fr
-          /* 3 (right items): use the space that these need. */
-          auto;
-        align-content: center;
-      }
+      display: grid;
+      grid-template-columns:
+        minmax(
+          calc(var(--__sidebar-width) + max(0rem, var(--__main-column-fr) - var(--sl-nav-gap))),
+          auto
+        )
+        1fr
+        auto;
+      align-content: center;
     }
   }
+
+  :root[data-theme="light"] .lp-glass-header {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.62) 0%,
+        rgba(255, 255, 255, 0.30) 100%
+      );
+    border-color: rgba(255, 255, 255, 0.55);
+    box-shadow:
+      0 10px 26px rgba(120, 140, 180, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.70),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.18);
+  }
+
+  :root[data-theme="light"] .lp-glass-header::before {
+    background:
+      radial-gradient(circle at 12% 0%, rgba(0, 220, 255, 0.14), transparent 28%),
+      radial-gradient(circle at 88% 0%, rgba(255, 0, 170, 0.10), transparent 26%),
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.42),
+        rgba(255, 255, 255, 0.08)
+      );
+    opacity: 1;
+  }
+
+  :root[data-theme="light"] .social-icons::after {
+    border-inline-end-color: rgba(120, 130, 170, 0.18);
+  }
+}
+@layer starlight.core {
+  :global(.search),
+  :global(.search-wrapper),
+  :global(.search-input),
+  :global([data-pagefind-ui]),
+  :global(button[aria-label="Search"]),
+  :global(input[type="search"]) {
+    background: transparent !important;
+  }
+
+  :global(.search-wrapper),
+  :global(.search-input),
+  :global(button[aria-label="Search"]) {
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    border-radius: 0.9rem !important;
+    backdrop-filter: blur(18px) saturate(1.25);
+    -webkit-backdrop-filter: blur(18px) saturate(1.25);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 6px 18px rgba(0, 0, 0, 0.12);
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.10),
+        rgba(255, 255, 255, 0.04)
+      ) !important;
+  }
+
+  :global(.search-input input),
+  :global(input[type="search"]) {
+    background: transparent !important;
+    color: inherit !important;
+  }
+
+  :global(.search-input input::placeholder),
+  :global(input[type="search"]::placeholder) {
+    color: rgba(255, 255, 255, 0.65) !important;
+  }
+
+  :root[data-theme="light"] :global(.search-wrapper),
+  :root[data-theme="light"] :global(.search-input),
+  :root[data-theme="light"] :global(button[aria-label="Search"]) {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.72),
+        rgba(255, 255, 255, 0.34)
+      ) !important;
+    border-color: rgba(255, 255, 255, 0.58) !important;
+  }
+
+  :root[data-theme="light"] :global(.search-input input::placeholder),
+  :root[data-theme="light"] :global(input[type="search"]::placeholder) {
+    color: rgba(70, 80, 110, 0.7) !important;
+  }
+}
 </style>

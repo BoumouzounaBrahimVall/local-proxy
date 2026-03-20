@@ -1,0 +1,12 @@
+<script is:inline>
+    document.addEventListener("pointermove", (e) => {
+      const bg = document.querySelector(".lp-grid-bg");
+      if (!bg) return;
+  
+      const x = (e.clientX / window.innerWidth) * 100;
+      const y = (e.clientY / window.innerHeight) * 100;
+  
+      bg.style.setProperty("--mx", `${x}%`);
+      bg.style.setProperty("--my", `${y}%`);
+    });
+  </script>

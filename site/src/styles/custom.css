@@ -109,25 +109,252 @@ header.header {
 
 /* ── Splash: grid + glow (add .lp-grid-bg / .lp-hero-glow in index.mdx) ── */
 .lp-grid-bg {
+  --mx: 50%;
+  --my: 20%;
+
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image:
-    linear-gradient(to right, var(--border-default) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--border-default) 1px, transparent 1px);
-  background-size: 3rem 3rem;
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 0%, transparent 100%);
-  -webkit-mask-image: radial-gradient(
-    ellipse 70% 60% at 50% 0%,
-    black 0%,
-    transparent 100%
-  );
+  overflow: hidden;
+
+  background:
+    /* mouse neon glow */
+    radial-gradient(
+      circle at var(--mx) var(--my),
+      rgba(255, 255, 255, 0.28) 0%,
+      rgba(0, 245, 255, 0.24) 10%,
+      rgba(255, 0, 170, 0.18) 22%,
+      rgba(140, 0, 255, 0.12) 34%,
+      transparent 46%
+    ),
+
+    /* vivid ambient neon blooms */
+    radial-gradient(circle at 14% 18%, rgba(0, 245, 255, 0.18), transparent 28%),
+    radial-gradient(circle at 86% 16%, rgba(255, 0, 170, 0.18), transparent 30%),
+    radial-gradient(circle at 50% 72%, rgba(140, 0, 255, 0.18), transparent 34%),
+
+    /* top energy wash */
+    radial-gradient(
+      ellipse at 50% 0%,
+      rgba(0, 245, 255, 0.10) 0%,
+      rgba(255, 0, 170, 0.08) 28%,
+      rgba(140, 0, 255, 0.06) 48%,
+      transparent 76%
+    ),
+
+    /* diagonal neon traces */
+    repeating-linear-gradient(
+      120deg,
+      rgba(0, 245, 255, 0.055) 0 2px,
+      transparent 2px 22px,
+      rgba(255, 0, 170, 0.045) 22px 24px,
+      transparent 24px 44px
+    ),
+
+    /* secondary finer traces */
+    repeating-linear-gradient(
+      -35deg,
+      rgba(255, 255, 255, 0.03) 0 1px,
+      transparent 1px 16px
+    ),
+
+    /* concentric techno waves */
+    repeating-radial-gradient(
+      circle at 50% 10%,
+      rgba(255, 255, 255, 0.035) 0 2px,
+      transparent 2px 26px
+    ),
+
+    /* base depth */
+    linear-gradient(
+      180deg,
+      rgba(7, 10, 24, 0.94) 0%,
+      rgba(10, 12, 30, 0.88) 42%,
+      rgba(14, 8, 30, 0.92) 100%
+    );
+
+  background-blend-mode:
+    screen,
+    screen,
+    screen,
+    screen,
+    normal,
+    normal,
+    normal,
+    normal;
+
+  filter: saturate(1.35) contrast(1.08);
+  transform: scale(1.08);
+
+  mask-image: radial-gradient(ellipse 92% 72% at 50% 0%, black 0%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 92% 72% at 50% 0%, black 0%, transparent 100%);
+
+  animation: lp-cyber-drift 22s ease-in-out infinite alternate;
+  will-change: transform, background-position, filter;
 }
 
-:root[data-theme="light"] .lp-grid-bg {
-  opacity: 0.35;
+.lp-grid-bg::before,
+.lp-grid-bg::after {
+  content: "";
+  position: absolute;
+  inset: -12%;
+  pointer-events: none;
 }
+
+.lp-grid-bg::before {
+  background:
+    conic-gradient(
+      from 180deg at 50% 50%,
+      transparent 0deg,
+      rgba(0, 245, 255, 0.06) 42deg,
+      transparent 84deg,
+      rgba(255, 0, 170, 0.05) 138deg,
+      transparent 190deg,
+      rgba(140, 0, 255, 0.06) 270deg,
+      transparent 360deg
+    ),
+    radial-gradient(
+      ellipse at 50% 30%,
+      rgba(255,255,255,0.08) 0%,
+      rgba(0,245,255,0.06) 18%,
+      rgba(255,0,170,0.05) 32%,
+      transparent 60%
+    );
+  filter: blur(38px);
+  opacity: 0.95;
+  mix-blend-mode: screen;
+  animation: lp-cyber-rotate 26s linear infinite;
+}
+
+.lp-grid-bg::after {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 28px,
+      rgba(0, 245, 255, 0.035) 28px 30px,
+      transparent 30px 58px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 28px,
+      rgba(255, 0, 170, 0.03) 28px 30px,
+      transparent 30px 58px
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(255,255,255,0.06),
+      transparent 60%
+    );
+  opacity: 0.38;
+  filter: blur(18px);
+  transform: perspective(1400px) rotateX(78deg) scale(1.34) translateY(-7%);
+  transform-origin: top center;
+  mix-blend-mode: screen;
+}
+
+@keyframes lp-cyber-drift {
+  0% {
+    transform: scale(1.08) translate3d(-1.2%, -1%, 0);
+    background-position:
+      0 0,
+      0 0,
+      0 0,
+      0 0,
+      0 0,
+      0 0,
+      0 0,
+      center;
+  }
+  50% {
+    transform: scale(1.12) translate3d(1.2%, 1%, 0);
+  }
+  100% {
+    transform: scale(1.09) translate3d(-0.8%, 2%, 0);
+    background-position:
+      0 0,
+      1rem -1rem,
+      -1rem 1rem,
+      0 -1rem,
+      3rem 0,
+      1rem 2rem,
+      0 2rem,
+      center;
+  }
+}
+
+@keyframes lp-cyber-rotate {
+  from {
+    transform: rotate(0deg) scale(1.02);
+  }
+  to {
+    transform: rotate(360deg) scale(1.06);
+  }
+}
+:root[data-theme="light"] .lp-grid-bg {
+  background:
+    radial-gradient(
+      circle at var(--mx) var(--my),
+      rgba(255, 255, 255, 0.42) 0%,
+      rgba(0, 220, 255, 0.24) 12%,
+      rgba(255, 0, 170, 0.18) 24%,
+      rgba(140, 0, 255, 0.12) 36%,
+      transparent 48%
+    ),
+
+    radial-gradient(circle at 14% 18%, rgba(0, 220, 255, 0.14), transparent 28%),
+    radial-gradient(circle at 86% 16%, rgba(255, 0, 170, 0.14), transparent 30%),
+    radial-gradient(circle at 50% 72%, rgba(140, 0, 255, 0.14), transparent 34%),
+
+    radial-gradient(
+      ellipse at 50% 0%,
+      rgba(0, 220, 255, 0.12) 0%,
+      rgba(255, 0, 170, 0.08) 30%,
+      rgba(140, 0, 255, 0.07) 50%,
+      transparent 76%
+    ),
+
+    repeating-linear-gradient(
+      120deg,
+      rgba(0, 220, 255, 0.05) 0 2px,
+      transparent 2px 22px,
+      rgba(255, 0, 170, 0.04) 22px 24px,
+      transparent 24px 44px
+    ),
+
+    repeating-linear-gradient(
+      -35deg,
+      rgba(90, 90, 140, 0.025) 0 1px,
+      transparent 1px 16px
+    ),
+
+    repeating-radial-gradient(
+      circle at 50% 10%,
+      rgba(120, 120, 255, 0.025) 0 2px,
+      transparent 2px 26px
+    ),
+
+    linear-gradient(
+      180deg,
+      rgba(248, 251, 255, 0.96) 0%,
+      rgba(238, 243, 255, 0.94) 42%,
+      rgba(246, 240, 255, 0.95) 100%
+    );
+
+  filter: saturate(1.45) contrast(1.06);
+  opacity: 1;
+}
+
+:root[data-theme="light"] .lp-grid-bg::before {
+  opacity: 0.85;
+  filter: blur(34px);
+}
+
+:root[data-theme="light"] .lp-grid-bg::after {
+  opacity: 0.28;
+}
+/* -------------------------------------------------------------- */
+
 
 .lp-hero-glow {
   position: fixed;
