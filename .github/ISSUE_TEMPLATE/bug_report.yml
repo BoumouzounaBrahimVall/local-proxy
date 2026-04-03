@@ -1,0 +1,106 @@
+name: Bug report
+description: Report a reproducible problem in local-proxy
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug.
+
+        Please include a minimal reproduction when possible. For proxy and mock issues, a small `scenarios.json` snippet and the exact request you made are usually the fastest way to debug the problem.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: Short description of the problem
+      placeholder: Browser requests fail with CORS errors when using local-proxy from a separate dev server
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: local-proxy version
+      description: Output of `local-proxy --version` or the installed package version
+      placeholder: 0.0.5
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Runtime and platform details
+      placeholder: |
+        OS: macOS 15.4
+        Node: 22.x
+        Package manager: pnpm 10.x
+        Frontend dev server: Next.js 15 on http://localhost:3000
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      description: Which part of local-proxy is involved?
+      options:
+        - Mocked responses
+        - Proxied responses
+        - CLI / startup
+        - Docs / examples
+        - Multiple areas
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Exact steps, commands, and requests
+      placeholder: |
+        1. Run `local-proxy --target https://api.example.com`
+        2. Use this `scenarios.json`:
+           { "rules": [...] }
+        3. Call `http://localhost:5050/api/v1/example` from the browser
+        4. Observe the error
+      render: bash
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: The request should be proxied/mocked successfully and return a valid response
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      placeholder: The browser blocks the request with a CORS error / the mock returns the wrong content type / the proxy crashes
+    validations:
+      required: true
+
+  - type: textarea
+    id: scenarios
+    attributes:
+      label: Relevant scenarios.json
+      description: Paste the smallest relevant config, if applicable
+      render: json
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs, stack traces, or response details
+      description: Include terminal output, browser errors, or HTTP response details
+      render: text
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Anything else that may help reproduce or debug the issue

@@ -1,0 +1,79 @@
+name: Feature request
+description: Suggest an improvement or new capability for local-proxy
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion.
+
+        The most useful requests describe the current limitation, the developer workflow affected by it, and what a good API or CLI shape could look like.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: Short description of the requested feature
+      placeholder: Add support for mocking binary responses with custom headers
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What limitation are you hitting today?
+      placeholder: |
+        local-proxy works for JSON mocks, but I cannot mock file download endpoints or other binary responses.
+    validations:
+      required: true
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use case
+      description: How would this feature help your workflow?
+      placeholder: |
+        I use local-proxy during frontend development and need to simulate success, failure, and edge cases without relying on backend changes.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed solution
+      description: Describe the API, config, or behavior you would like to see
+      placeholder: |
+        Add a `headers` field and support non-JSON fixtures with a configurable `contentType`.
+    validations:
+      required: true
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Example config or CLI shape
+      description: Optional, but helpful when the request affects CLI/config design
+      placeholder: |
+        {
+          "status": 200,
+          "file": "fixtures/report.pdf",
+          "contentType": "application/pdf",
+          "headers": {
+            "Content-Disposition": "attachment; filename=report.pdf"
+          }
+        }
+      render: json
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds or other designs you considered
+      placeholder: |
+        I can add another proxy in the frontend app, but that duplicates setup and reduces the value of local-proxy.
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Links, screenshots, prior art, or related issues
