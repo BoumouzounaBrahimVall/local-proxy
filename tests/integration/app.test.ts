@@ -7,11 +7,11 @@ describe("App Integration", () => {
   const createMockFs = (files: Record<string, string> = {}): FileSystem => ({
     existsSync: (path: string) =>
       Object.keys(files).some((f) => path.endsWith(f)),
-    readFileSync: (path: string) => {
+    readFileSync: ((path: string, encoding?: BufferEncoding): string | Buffer => {
       const key = Object.keys(files).find((f) => path.endsWith(f));
-      if (key) return files[key]!;
-      throw new Error(`File not found: ${path}`);
-    },
+      if (!key) throw new Error(`File not found: ${path}`);
+      return encoding !== undefined ? files[key]! : Buffer.from(files[key]!);
+    }) as FileSystem["readFileSync"],
     writeFileSync: () => {},
   });
 
@@ -99,6 +99,36 @@ describe("App Integration", () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ source: "file" });
+  });
+
+  it("serves binary fixture with explicit contentType", async () => {
+    const mockFs = createMockFs({
+      "scenarios.json": JSON.stringify({
+        rules: [
+          {
+            method: "GET",
+            match: "/report.pdf",
+            enabled: true,
+            active_scenario: "success",
+            scenarios: {
+              success: {
+                status: 200,
+                file: "fixtures/report.pdf",
+                contentType: "application/pdf",
+              },
+            },
+          },
+        ],
+      }),
+      "fixtures/report.pdf": "%PDF-1.4 fake pdf content",
+    });
+
+    const app = createApp(createContext({ fs: mockFs }));
+    const res = await request(app).get("/api/report.pdf");
+
+    expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toMatch(/application\/pdf/);
+    expect(res.body.toString()).toContain("%PDF-1.4");
   });
 
   it("returns 500 when fixture file not found", async () => {
