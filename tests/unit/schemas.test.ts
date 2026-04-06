@@ -82,19 +82,25 @@ describe("scenarioSchema", () => {
     ).toThrow();
   });
 
+  it("rejects scenario with both json and file", () => {
+    expect(() =>
+      scenarioSchema.parse({ json: { ok: true }, file: "fixtures/data.json" })
+    ).toThrow();
+  });
+
   it("accepts file scenario without contentType", () => {
-    const result = scenarioSchema.parse({ file: "fixtures/report.pdf" });
+    const result = fileScenarioSchema.parse({ file: "fixtures/report.pdf" });
     expect(result.file).toBe("fixtures/report.pdf");
-    expect((result as { contentType?: string }).contentType).toBeUndefined();
+    expect(result.contentType).toBeUndefined();
   });
 
   it("accepts file scenario with contentType", () => {
-    const result = scenarioSchema.parse({
+    const result = fileScenarioSchema.parse({
       file: "fixtures/report.pdf",
       contentType: "application/pdf",
     });
     expect(result.file).toBe("fixtures/report.pdf");
-    expect((result as { contentType?: string }).contentType).toBe("application/pdf");
+    expect(result.contentType).toBe("application/pdf");
   });
 
   it("accepts optional delay", () => {

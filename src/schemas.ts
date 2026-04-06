@@ -40,13 +40,13 @@ export const fileScenarioSchema = z.object({
   ...baseScenarioFields,
   file: z.string(),
   contentType: z.string().optional(),
-});
+}).strict();
 
 export type FileScenario = z.infer<typeof fileScenarioSchema>;
 
 export const scenarioSchema = z.union([jsonScenarioSchema, fileScenarioSchema]);
 
-export type Scenario = JsonScenario | FileScenario;
+export type Scenario = z.infer<typeof scenarioSchema>;
 
 export const ruleSchema = z
   .object({
