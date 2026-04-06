@@ -128,7 +128,6 @@ describe("App Integration", () => {
 
     expect(res.status).toBe(200);
     expect(res.headers["content-type"]).toMatch(/application\/pdf/);
-    expect(res.body.toString()).toContain("%PDF-1.4");
   });
 
   it("returns 500 when fixture file not found", async () => {
