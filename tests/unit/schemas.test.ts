@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import {
   cliOptionsSchema,
   scenarioSchema,
-  jsonScenarioSchema,
   fileScenarioSchema,
   ruleSchema,
   scenariosConfigSchema,
