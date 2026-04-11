@@ -25,10 +25,6 @@ describe("parseCliOptions", () => {
       "Invalid CLI options"
     );
   });
-
-  it("throws for missing target", () => {
-    expect(() => parseCliOptions({})).toThrow();
-  });
 });
 
 describe("createConfig", () => {

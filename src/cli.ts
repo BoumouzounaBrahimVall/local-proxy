@@ -37,6 +37,11 @@ program
       process.exit(1);
     }
 
+    if (!options.init && !options.target) {
+      console.error("Invalid CLI options:\n  target: target must be a valid URL");
+      process.exit(1);
+    }
+
     if (options.init) {
       const templatePath = path.join(__dirname, "..", "templates", "scenarios.json");
       const destPath = path.resolve(process.cwd(), "scenarios.json");

@@ -2,7 +2,7 @@ import { z } from "zod/v4";
 
 export const cliOptionsSchema = z.object({
   port: z.coerce.number().int().min(1).max(65535).default(5050),
-  target: z.string().url("target must be a valid URL"),
+  target: z.string().url("target must be a valid URL").optional(),
   apiPrefix: z
     .string()
     .refine((val) => val.startsWith("/"), "apiPrefix must start with /")
