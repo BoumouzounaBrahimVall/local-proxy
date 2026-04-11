@@ -7,7 +7,7 @@ name: Quality Check
 on:
   push:
     branches: ["main"]
-  pull_request:
+  pull_request_target:
     branches: ["main"]
     paths:
       - "src/**"
@@ -36,6 +36,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install pnpm
         run: |
@@ -72,6 +74,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install pnpm
         run: |
