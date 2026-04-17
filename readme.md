@@ -105,6 +105,47 @@ local-proxy [options]
 
 Each scenario must include at least one of `json` or `file`.
 
+## Dynamic path parameters
+
+The `match` field supports named path parameters using `:paramName` syntax and wildcard captures using `*splatName`. Patterns are matched with [path-to-regexp](https://github.com/pillarjs/path-to-regexp).
+
+### Named parameters
+
+A `:paramName` segment matches exactly one path segment, regardless of its value:
+
+```json
+{ "match": "/v1/users/:id" }
+{ "match": "/v1/orgs/:orgId/repos/:repoId" }
+```
+
+### Wildcard captures
+
+A `*splatName` segment matches one or more path segments:
+
+```json
+{ "match": "/v1/files/*path" }
+```
+
+This matches `/v1/files/report.pdf` as well as `/v1/files/2024/january/report.pdf`.
+
+### Rule precedence
+
+Rules are evaluated in order. Place more specific (literal) rules before param rules to give them priority:
+
+```json
+{ "match": "/v1/users/me" },
+{ "match": "/v1/users/:id" }
+```
+
+### Param logging
+
+Matched parameters are printed in the proxy log:
+
+```text
+[MOCKED] GET /api/v1/users/42         -> success {"id":"42"}
+[MOCKED] GET /api/v1/users/42/posts/7 -> success {"id":"42","postId":"7"}
+```
+
 ## Non-JSON responses
 
 `file` scenarios support any content type. Use `contentType` and `headers` to mock binary downloads, PDFs, CSVs, and images:

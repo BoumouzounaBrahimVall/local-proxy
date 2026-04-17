@@ -17,6 +17,7 @@ describe("matchRule", () => {
     const result = matchRule(rules, "GET", "/test");
     expect(result).not.toBeNull();
     expect(result?.rule.match).toBe("/test");
+    expect(result?.params).toEqual({});
   });
 
   it("returns null for disabled rules", () => {
@@ -70,7 +71,7 @@ describe("matchRule", () => {
     ];
     rules[0]!.scenarios["first"] = { status: 200, json: { first: true } };
     rules[1]!.scenarios["second"] = { status: 200, json: { second: true } };
-    
+
     const result = matchRule(rules, "GET", "/test");
     expect(result?.rule.active_scenario).toBe("first");
   });
@@ -78,6 +79,64 @@ describe("matchRule", () => {
   it("returns null when no rules provided", () => {
     const result = matchRule([], "GET", "/test");
     expect(result).toBeNull();
+  });
+
+  it("matches path parameter :id and returns params", () => {
+    const rules = [createRule({ match: "/users/:id" })];
+    const result = matchRule(rules, "GET", "/users/42");
+    expect(result).not.toBeNull();
+    expect(result?.params).toEqual({ id: "42" });
+  });
+
+  it("matches multiple path parameters", () => {
+    const rules = [createRule({ match: "/users/:id/posts/:postId" })];
+    const result = matchRule(rules, "GET", "/users/42/posts/7");
+    expect(result).not.toBeNull();
+    expect(result?.params).toEqual({ id: "42", postId: "7" });
+  });
+
+  it("matches wildcard *splat for multi-segment paths", () => {
+    const rules = [createRule({ match: "/files/*splat" })];
+    const result = matchRule(rules, "GET", "/files/a/b/c.pdf");
+    expect(result).not.toBeNull();
+    expect(result?.params).toEqual({ splat: "a/b/c.pdf" });
+  });
+
+  it("does not match path param rule against wrong path", () => {
+    const rules = [createRule({ match: "/users/:id" })];
+    const result = matchRule(rules, "GET", "/orders/42");
+    expect(result).toBeNull();
+  });
+
+  it("literal path takes precedence over param rule when placed first", () => {
+    const rules = [
+      createRule({ match: "/users/me", active_scenario: "me" }),
+      createRule({ match: "/users/:id", active_scenario: "byId" }),
+    ];
+    rules[0]!.scenarios["me"] = { status: 200, json: { self: true } };
+    rules[1]!.scenarios["byId"] = { status: 200, json: { user: true } };
+
+    const result = matchRule(rules, "GET", "/users/me");
+    expect(result?.rule.active_scenario).toBe("me");
+  });
+
+  it("param rule matches when literal rule placed after it", () => {
+    const rules = [
+      createRule({ match: "/users/:id", active_scenario: "byId" }),
+      createRule({ match: "/users/me", active_scenario: "me" }),
+    ];
+    rules[0]!.scenarios["byId"] = { status: 200, json: { user: true } };
+    rules[1]!.scenarios["me"] = { status: 200, json: { self: true } };
+
+    const result = matchRule(rules, "GET", "/users/me");
+    expect(result?.rule.active_scenario).toBe("byId");
+  });
+
+  it("decodes percent-encoded path parameters", () => {
+    const rules = [createRule({ match: "/search/:query" })];
+    const result = matchRule(rules, "GET", "/search/hello%20world");
+    expect(result).not.toBeNull();
+    expect(result?.params).toEqual({ query: "hello world" });
   });
 });
 

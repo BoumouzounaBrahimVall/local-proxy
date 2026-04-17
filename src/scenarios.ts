@@ -1,6 +1,18 @@
 import * as path from "path";
+import { match } from "path-to-regexp";
 import { scenariosConfigSchema } from "./schemas";
 import type { ScenariosConfig, Rule, Scenario, FileSystem } from "./types";
+
+const matchFnCache = new Map<string, ReturnType<typeof match>>();
+
+function getMatchFn(pattern: string): ReturnType<typeof match> {
+  let fn = matchFnCache.get(pattern);
+  if (!fn) {
+    fn = match(pattern, { decode: decodeURIComponent });
+    matchFnCache.set(pattern, fn);
+  }
+  return fn;
+}
 
 export interface ScenarioLoader {
   load(scenariosPath: string): ScenariosConfig;
@@ -48,7 +60,7 @@ export function matchRule(
   rules: Rule[],
   method: string,
   requestPath: string
-): { rule: Rule; scenario: Scenario } | null {
+): { rule: Rule; scenario: Scenario; params: Record<string, string> } | null {
   const upperMethod = method.toUpperCase();
 
   for (const rule of rules) {
@@ -58,12 +70,23 @@ export function matchRule(
     const normalizedMatch = rule.match.startsWith("/")
       ? rule.match
       : `/${rule.match}`;
-    if (requestPath !== normalizedMatch) continue;
+
+    const result = getMatchFn(normalizedMatch)(requestPath);
+    if (!result) continue;
 
     const scenario = rule.scenarios[rule.active_scenario];
     if (!scenario) continue;
 
-    return { rule, scenario };
+    const params: Record<string, string> = {};
+    for (const [key, value] of Object.entries(result.params)) {
+      if (Array.isArray(value)) {
+        params[key] = value.join("/");
+      } else if (value !== undefined) {
+        params[key] = value as string;
+      }
+    }
+
+    return { rule, scenario, params };
   }
   return null;
 }
