@@ -1,5 +1,16 @@
-import { describe, it, expect, vi } from "vitest";
+import http from "http";
+import https from "https";
+import { beforeEach, describe, it, expect, vi } from "vitest";
+
+const { createProxyMiddlewareMock } = vi.hoisted(() => ({
+  createProxyMiddlewareMock: vi.fn(() => vi.fn()),
+}));
+vi.mock("http-proxy-middleware", () => ({
+  createProxyMiddleware: createProxyMiddlewareMock,
+}));
+
 import {
+  createProxyMiddlewareFactory,
   getPathname,
   handleProxyError,
   type ProxyErrorRequest,
@@ -132,5 +143,46 @@ describe("handleProxyError", () => {
       "→",
       "/fallback/url"
     );
+  });
+});
+
+describe("createProxyMiddlewareFactory agent selection", () => {
+  const getCapturedAgent = (): unknown => {
+    const mock = createProxyMiddlewareMock as unknown as {
+      mock: { lastCall?: [{ agent?: unknown }] };
+    };
+    const lastCall = mock.mock.lastCall;
+    if (!lastCall) {
+      throw new Error(
+        "createProxyMiddleware was never called — did you invoke createProxyMiddlewareFactory?"
+      );
+    }
+    return lastCall[0]?.agent;
+  };
+
+  beforeEach(() => {
+    createProxyMiddlewareMock.mockClear();
+  });
+
+  // https.Agent extends http.Agent, so assert both positive and negative
+  // to catch a regression where every target gets the https agent.
+  it("uses http.Agent when target protocol is http", () => {
+    createProxyMiddlewareFactory({
+      target: "http://localhost:3000",
+      apiPrefix: "/api",
+    });
+
+    const agent = getCapturedAgent();
+    expect(agent).toBeInstanceOf(http.Agent);
+    expect(agent).not.toBeInstanceOf(https.Agent);
+  });
+
+  it("uses https.Agent when target protocol is https", () => {
+    createProxyMiddlewareFactory({
+      target: "https://api.example.com",
+      apiPrefix: "/api",
+    });
+
+    expect(getCapturedAgent()).toBeInstanceOf(https.Agent);
   });
 });
