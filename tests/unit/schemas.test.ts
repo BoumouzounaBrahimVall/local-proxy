@@ -5,6 +5,7 @@ import {
   fileScenarioSchema,
   ruleSchema,
   scenariosConfigSchema,
+  corsConfigSchema,
 } from "../../src/schemas";
 
 describe("cliOptionsSchema", () => {
@@ -215,6 +216,75 @@ describe("scenariosConfigSchema", () => {
       scenariosConfigSchema.parse({
         rules: [{ method: "INVALID" }],
       })
+    ).toThrow();
+  });
+
+  it("accepts cors block alongside rules", () => {
+    const result = scenariosConfigSchema.parse({
+      rules: [],
+      cors: { enabled: true },
+    });
+    expect(result.cors?.enabled).toBe(true);
+    expect(result.cors?.origin).toBe("auto");
+  });
+});
+
+describe("corsConfigSchema", () => {
+  it("applies defaults when only enabled is set", () => {
+    const result = corsConfigSchema.parse({ enabled: true });
+    expect(result.enabled).toBe(true);
+    expect(result.origin).toBe("auto");
+    expect(result.credentials).toBe(true);
+    expect(result.allowedHeaders).toBe("auto");
+    expect(result.allowedMethods).toEqual([
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ]);
+    expect(result.maxAge).toBe(86400);
+  });
+
+  it("defaults enabled to false when not provided", () => {
+    const result = corsConfigSchema.parse({});
+    expect(result.enabled).toBe(false);
+  });
+
+  it("rejects unknown fields via strict", () => {
+    expect(() =>
+      corsConfigSchema.parse({ enabled: true, unknownField: "x" })
+    ).toThrow();
+  });
+
+  it("accepts string origin", () => {
+    const result = corsConfigSchema.parse({
+      enabled: true,
+      origin: "http://localhost:3000",
+    });
+    expect(result.origin).toBe("http://localhost:3000");
+  });
+
+  it("accepts array origin", () => {
+    const result = corsConfigSchema.parse({
+      enabled: true,
+      origin: ["http://a.test", "http://b.test"],
+    });
+    expect(result.origin).toEqual(["http://a.test", "http://b.test"]);
+  });
+
+  it("accepts explicit allowedHeaders list", () => {
+    const result = corsConfigSchema.parse({
+      enabled: true,
+      allowedHeaders: ["Authorization", "Content-Type"],
+    });
+    expect(result.allowedHeaders).toEqual(["Authorization", "Content-Type"]);
+  });
+
+  it("rejects negative maxAge", () => {
+    expect(() =>
+      corsConfigSchema.parse({ enabled: true, maxAge: -1 })
     ).toThrow();
   });
 });

@@ -1,6 +1,7 @@
 import https from "https";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import type { Logger } from "../types";
+import { UPSTREAM_CORS_HEADERS, appendVaryOrigin } from "./corsMiddleware";
 
 export interface ProxyMiddlewareOptions {
   target: string;
@@ -47,6 +48,14 @@ export function handleProxyError(
   }
 }
 
+export function stripUpstreamCorsHeaders(
+  headers: Record<string, string | string[] | undefined>
+): void {
+  for (const name of UPSTREAM_CORS_HEADERS) {
+    delete headers[name];
+  }
+}
+
 const noKeepAliveAgent = new https.Agent({ keepAlive: false });
 
 export function createProxyMiddlewareFactory(options: ProxyMiddlewareOptions) {
@@ -75,6 +84,19 @@ export function createProxyMiddlewareFactory(options: ProxyMiddlewareOptions) {
             resOrSocket as unknown as ProxyErrorResponse,
             logger
           );
+        }
+      },
+      proxyRes(
+        proxyRes: import("http").IncomingMessage,
+        _req: import("http").IncomingMessage,
+        res: import("http").ServerResponse
+      ) {
+        const locals = (res as { locals?: Record<string, unknown> }).locals;
+        if (locals && locals["corsApplied"] === true) {
+          stripUpstreamCorsHeaders(proxyRes.headers);
+          if (locals["corsVaryOrigin"] === true) {
+            appendVaryOrigin(proxyRes.headers);
+          }
         }
       },
     },

@@ -23,6 +23,7 @@ program
     "./scenarios.json"
   )
   .option("--init", "Create a scenarios.json template in current directory")
+  .option("--cors", "Enable permissive CORS headers for browser dev use")
   .action((rawOptions: Record<string, unknown>) => {
    
     if (!rawOptions["target"] && !rawOptions["init"]) {
