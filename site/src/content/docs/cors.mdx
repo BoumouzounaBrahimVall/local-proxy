@@ -1,0 +1,67 @@
+---
+title: CORS
+description: Enable browser-friendly CORS handling on the proxy
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+Running local-proxy from a browser on a different origin — the typical dev setup with frontend on `localhost:3000` and proxy on `localhost:5050` — triggers CORS. Enable handling in one of two ways.
+
+## CLI flag
+
+Permissive defaults, ideal for quick dev:
+
+```bash
+  local-proxy --target https://api.example.com --cors
+```
+
+## `cors` block in `scenarios.json`
+
+Fine-grained control:
+
+```json
+{
+  "cors": {
+    "enabled": true,
+    "origin": "auto",
+    "credentials": true,
+    "allowedHeaders": "auto",
+    "allowedMethods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    "exposedHeaders": ["X-Total-Count"],
+    "maxAge": 86400
+  },
+  "rules": []
+}
+```
+
+## Fields
+
+- `enabled` (boolean, default `false`): turn CORS handling on
+- `origin` (`"auto"` | string | string[], default `"auto"`): `"auto"` reflects the request `Origin`; an array allowlists specific origins
+- `credentials` (boolean, default `true`): sets `Access-Control-Allow-Credentials: true`
+- `allowedHeaders` (`"auto"` | string[], default `"auto"`): `"auto"` echoes the preflight `Access-Control-Request-Headers`
+- `allowedMethods` (string[], default `["GET","POST","PUT","PATCH","DELETE","OPTIONS"]`): methods returned on preflight
+- `exposedHeaders` (string[], optional): headers exposed to JS via `Access-Control-Expose-Headers`
+- `maxAge` (number, default `86400`): preflight cache seconds
+
+## Behavior
+
+`--cors` forces `enabled: true` regardless of the scenarios file; other fields in the `cors` block still apply. When CORS is on:
+
+- preflight `OPTIONS` requests are short-circuited with `204`
+- mocked responses receive CORS headers
+- upstream CORS headers are stripped from proxied responses to avoid duplicates
+
+## Tips
+
+<CardGrid>
+  <Card title="Start with --cors" icon="rocket">
+    The flag gives you working defaults so you can unblock a frontend in seconds.
+  </Card>
+  <Card title="Allowlist origins for shared envs" icon="approve-check">
+    Use `origin: ["http://localhost:3000", "http://localhost:4200"]` instead of `"auto"` when multiple apps hit the same proxy.
+  </Card>
+  <Card title="Expose custom headers" icon="seti:config">
+    Set `exposedHeaders` (for example `["X-Total-Count"]`) so frontend code can read them via `fetch`.
+  </Card>
+</CardGrid>

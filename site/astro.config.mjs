@@ -45,6 +45,7 @@ export default defineConfig({
             { label: "Example", slug: "example" },
             { label: "CLI Reference", slug: "cli-reference" },
             { label: "Scenarios", slug: "scenarios" },
+            { label: "CORS", slug: "cors" },
           ],
         },
       ],
