@@ -52,6 +52,7 @@ local-proxy [options]
 | `-a, --api-prefix <path>` | API path prefix | `/api` |
 | `-s, --scenarios <file>` | Scenarios file path | `./scenarios.json` |
 | `--init` | Create starter `scenarios.json` | - |
+| `--cors` | Enable permissive CORS headers for browser dev | - |
 | `-h, --help` | Show help | - |
 | `-V, --version` | Show version | - |
 
@@ -122,6 +123,45 @@ Each scenario must include at least one of `json` or `file`.
 ```
 
 When `contentType` is omitted, the type is auto-detected from the file extension. Files are served as raw buffers — binary content is never corrupted.
+
+## CORS
+
+Running local-proxy from a browser on a different origin (the typical dev setup: frontend on `localhost:3000`, proxy on `localhost:5050`) triggers CORS. Enable handling in one of two ways.
+
+**CLI flag** — permissive defaults, ideal for quick dev:
+
+```bash
+local-proxy --target https://api.example.com --cors
+```
+
+**`cors` block in `scenarios.json`** — fine-grained control:
+
+```json
+{
+  "cors": {
+    "enabled": true,
+    "origin": "auto",
+    "credentials": true,
+    "allowedHeaders": "auto",
+    "allowedMethods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    "exposedHeaders": ["X-Total-Count"],
+    "maxAge": 86400
+  },
+  "rules": []
+}
+```
+
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `enabled` | boolean | `false` | Enable CORS handling |
+| `origin` | `"auto"` \| string \| string[] | `"auto"` | `"auto"` reflects the request `Origin`; array allowlists specific origins |
+| `credentials` | boolean | `true` | Sets `Access-Control-Allow-Credentials: true` |
+| `allowedHeaders` | `"auto"` \| string[] | `"auto"` | `"auto"` echoes the preflight `Access-Control-Request-Headers` |
+| `allowedMethods` | string[] | `["GET","POST","PUT","PATCH","DELETE","OPTIONS"]` | Methods returned on preflight |
+| `exposedHeaders` | string[] | - | Optional headers exposed to JS via `Access-Control-Expose-Headers` |
+| `maxAge` | number | `86400` | Preflight cache seconds |
+
+`--cors` forces `enabled: true` regardless of the scenarios file; other fields in the `cors` block still apply. When CORS is on, preflight `OPTIONS` requests are short-circuited with `204`, mocked responses receive CORS headers, and upstream CORS headers are stripped from proxied responses to avoid duplicates.
 
 ## Development
 
