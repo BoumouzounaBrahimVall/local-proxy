@@ -13,6 +13,7 @@ import {
   createProxyMiddlewareFactory,
   getPathname,
   handleProxyError,
+  stripUpstreamCorsHeaders,
   type ProxyErrorRequest,
   type ProxyErrorResponse,
 } from "../../src/middleware/proxyMiddleware";
@@ -185,6 +186,36 @@ describe("createProxyMiddlewareFactory agent selection", () => {
     });
 
     expect(getCapturedAgent()).toBeInstanceOf(https.Agent);
+  });
+});
+
+describe("stripUpstreamCorsHeaders", () => {
+  it("removes all access-control-* headers", () => {
+    const headers: Record<string, string | string[] | undefined> = {
+      "access-control-allow-origin": "https://upstream.example.com",
+      "access-control-allow-credentials": "true",
+      "access-control-allow-methods": "GET, POST",
+      "access-control-allow-headers": "Authorization",
+      "access-control-expose-headers": "X-Total-Count",
+      "access-control-max-age": "3600",
+      "content-type": "application/json",
+    };
+    stripUpstreamCorsHeaders(headers);
+    expect(headers["access-control-allow-origin"]).toBeUndefined();
+    expect(headers["access-control-allow-credentials"]).toBeUndefined();
+    expect(headers["access-control-allow-methods"]).toBeUndefined();
+    expect(headers["access-control-allow-headers"]).toBeUndefined();
+    expect(headers["access-control-expose-headers"]).toBeUndefined();
+    expect(headers["access-control-max-age"]).toBeUndefined();
+    expect(headers["content-type"]).toBe("application/json");
+  });
+
+  it("is a no-op when no CORS headers are present", () => {
+    const headers: Record<string, string | string[] | undefined> = {
+      "content-type": "text/plain",
+    };
+    stripUpstreamCorsHeaders(headers);
+    expect(headers).toEqual({ "content-type": "text/plain" });
   });
 });
 

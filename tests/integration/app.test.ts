@@ -181,6 +181,33 @@ describe("App Integration", () => {
     expect(res.body.error).toBe("Fixture not found");
   });
 
+  it("delays mocked response when scenario.delay is set", async () => {
+    const mockFs = createMockFs({
+      "scenarios.json": JSON.stringify({
+        rules: [
+          {
+            method: "GET",
+            match: "/slow",
+            enabled: true,
+            active_scenario: "delayed",
+            scenarios: {
+              delayed: { status: 200, json: { ok: true }, delay: 0.05 },
+            },
+          },
+        ],
+      }),
+    });
+
+    const app = createApp(createContext({ fs: mockFs }));
+    const start = Date.now();
+    const res = await request(app).get("/api/slow");
+    const elapsed = Date.now() - start;
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ok: true });
+    expect(elapsed).toBeGreaterThanOrEqual(45);
+  });
+
   it("logs mocked requests", async () => {
     const mockLogger = createMockLogger();
     const mockFs = createMockFs({
@@ -390,6 +417,114 @@ describe("App Integration", () => {
       expect(res.headers["access-control-allow-origin"]).toBe("*");
       expect(res.headers["access-control-allow-credentials"]).toBeUndefined();
       expect(res.headers["vary"]).toBeUndefined();
+    });
+
+    it("returns the request Origin when it is in the allowed origin array", async () => {
+      const mockFs = createMockFs({
+        "scenarios.json": JSON.stringify({
+          rules: [
+            {
+              method: "GET",
+              match: "/list",
+              enabled: true,
+              active_scenario: "ok",
+              scenarios: { ok: { json: { ok: true } } },
+            },
+          ],
+          cors: {
+            enabled: true,
+            origin: ["http://a.test", "http://b.test"],
+          },
+        }),
+      });
+
+      const app = createApp(createContext({ fs: mockFs }));
+      const res = await request(app)
+        .get("/api/list")
+        .set("Origin", "http://b.test");
+
+      expect(res.headers["access-control-allow-origin"]).toBe("http://b.test");
+      expect(res.headers["vary"]).toMatch(/Origin/);
+    });
+
+    it("falls back to the first allowed origin when request Origin is not listed", async () => {
+      const mockFs = createMockFs({
+        "scenarios.json": JSON.stringify({
+          rules: [
+            {
+              method: "GET",
+              match: "/list",
+              enabled: true,
+              active_scenario: "ok",
+              scenarios: { ok: { json: { ok: true } } },
+            },
+          ],
+          cors: {
+            enabled: true,
+            origin: ["http://a.test", "http://b.test"],
+          },
+        }),
+      });
+
+      const app = createApp(createContext({ fs: mockFs }));
+      const res = await request(app)
+        .get("/api/list")
+        .set("Origin", "http://other.test");
+
+      expect(res.headers["access-control-allow-origin"]).toBe("http://a.test");
+    });
+
+    it("uses an explicit allowedHeaders array verbatim", async () => {
+      const mockFs = createMockFs({
+        "scenarios.json": JSON.stringify({
+          rules: [],
+          cors: {
+            enabled: true,
+            allowedHeaders: ["Authorization", "X-Trace-Id"],
+          },
+        }),
+      });
+
+      const app = createApp(createContext({ fs: mockFs }));
+      const res = await request(app)
+        .options("/api/anything")
+        .set("Origin", "http://localhost:3000")
+        .set("Access-Control-Request-Method", "POST")
+        .set("Access-Control-Request-Headers", "X-Should-Be-Ignored");
+
+      expect(res.status).toBe(204);
+      expect(res.headers["access-control-allow-headers"]).toBe(
+        "Authorization, X-Trace-Id"
+      );
+    });
+
+    it("sets Access-Control-Expose-Headers when configured", async () => {
+      const mockFs = createMockFs({
+        "scenarios.json": JSON.stringify({
+          rules: [
+            {
+              method: "GET",
+              match: "/exposed",
+              enabled: true,
+              active_scenario: "ok",
+              scenarios: { ok: { json: { ok: true } } },
+            },
+          ],
+          cors: {
+            enabled: true,
+            exposedHeaders: ["Content-Disposition", "X-Total-Count"],
+          },
+        }),
+      });
+
+      const app = createApp(createContext({ fs: mockFs }));
+      const res = await request(app)
+        .get("/api/exposed")
+        .set("Origin", "http://localhost:3000");
+
+      expect(res.headers["access-control-expose-headers"]).toBe(
+        "Content-Disposition, X-Total-Count"
+      );
     });
 
     it("sets Vary: Origin on mocked responses when origin is reflected", async () => {
