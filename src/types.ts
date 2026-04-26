@@ -6,6 +6,7 @@ export type {
   FileScenario,
   Rule,
   ScenariosConfig,
+  CorsConfig,
 } from "./schemas";
 
 export interface Logger {
@@ -29,4 +30,5 @@ export interface AppContext {
   logger: Logger;
   fs: FileSystem;
   basePath: string;
+  cors: boolean;
 }

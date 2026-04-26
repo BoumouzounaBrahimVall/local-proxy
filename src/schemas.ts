@@ -1,5 +1,25 @@
 import { z } from "zod/v4";
 
+export const corsConfigSchema = z
+  .object({
+    enabled: z.boolean().default(false),
+    origin: z
+      .union([z.literal("auto"), z.string(), z.array(z.string()).min(1)])
+      .default("auto"),
+    credentials: z.boolean().default(true),
+    allowedHeaders: z
+      .union([z.literal("auto"), z.array(z.string())])
+      .default("auto"),
+    allowedMethods: z
+      .array(z.string())
+      .default(["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]),
+    exposedHeaders: z.array(z.string()).optional(),
+    maxAge: z.number().int().nonnegative().default(86400),
+  })
+  .strict();
+
+export type CorsConfig = z.infer<typeof corsConfigSchema>;
+
 export const cliOptionsSchema = z.object({
   port: z.coerce.number().int().min(1).max(65535).default(5050),
   target: z.string().url("target must be a valid URL").optional(),
@@ -9,6 +29,7 @@ export const cliOptionsSchema = z.object({
     .default("/api"),
   scenarios: z.string().default("./scenarios.json"),
   init: z.boolean().optional(),
+  cors: z.boolean().optional(),
 });
 
 export type CliOptions = z.infer<typeof cliOptionsSchema>;
@@ -18,6 +39,7 @@ export const appConfigSchema = z.object({
   target: z.string().url(),
   apiPrefix: z.string().refine((val) => val.startsWith("/")),
   scenariosPath: z.string(),
+  cors: z.boolean().default(false),
 });
 
 export type AppConfig = z.infer<typeof appConfigSchema>;
@@ -74,6 +96,7 @@ export type Rule = z.infer<typeof ruleSchema>;
 
 export const scenariosConfigSchema = z.object({
   rules: z.array(ruleSchema).default([]),
+  cors: corsConfigSchema.optional(),
 });
 
 export type ScenariosConfig = z.infer<typeof scenariosConfigSchema>;
