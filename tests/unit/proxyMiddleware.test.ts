@@ -16,6 +16,7 @@ import {
   type ProxyErrorRequest,
   type ProxyErrorResponse,
 } from "../../src/middleware/proxyMiddleware";
+import { appendVaryOrigin } from "../../src/middleware/corsMiddleware";
 import type { Logger } from "../../src/types";
 
 describe("getPathname", () => {
@@ -184,5 +185,53 @@ describe("createProxyMiddlewareFactory agent selection", () => {
     });
 
     expect(getCapturedAgent()).toBeInstanceOf(https.Agent);
+  });
+});
+
+describe("appendVaryOrigin", () => {
+  it("sets Vary to Origin when no existing Vary", () => {
+    const headers: Record<string, string | string[] | undefined> = {};
+    appendVaryOrigin(headers);
+    expect(headers["vary"]).toBe("Origin");
+  });
+
+  it("appends Origin to existing Vary header", () => {
+    const headers: Record<string, string | string[] | undefined> = {
+      vary: "Accept-Encoding",
+    };
+    appendVaryOrigin(headers);
+    expect(headers["vary"]).toBe("Accept-Encoding, Origin");
+  });
+
+  it("does not duplicate Origin when already present", () => {
+    const headers: Record<string, string | string[] | undefined> = {
+      vary: "Origin, Accept-Encoding",
+    };
+    appendVaryOrigin(headers);
+    expect(headers["vary"]).toBe("Origin, Accept-Encoding");
+  });
+
+  it("is case-insensitive when checking for existing Origin", () => {
+    const headers: Record<string, string | string[] | undefined> = {
+      vary: "origin",
+    };
+    appendVaryOrigin(headers);
+    expect(headers["vary"]).toBe("origin");
+  });
+
+  it("leaves Vary alone when it is *", () => {
+    const headers: Record<string, string | string[] | undefined> = {
+      vary: "*",
+    };
+    appendVaryOrigin(headers);
+    expect(headers["vary"]).toBe("*");
+  });
+
+  it("flattens array Vary values when appending", () => {
+    const headers: Record<string, string | string[] | undefined> = {
+      vary: ["Accept-Encoding", "User-Agent"],
+    };
+    appendVaryOrigin(headers);
+    expect(headers["vary"]).toBe("Accept-Encoding, User-Agent, Origin");
   });
 });

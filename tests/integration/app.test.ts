@@ -35,6 +35,7 @@ describe("App Integration", () => {
     fs: createMockFs({}),
     logger: createMockLogger(),
     basePath: "/test",
+    cors: false,
     ...overrides,
   });
 
@@ -249,5 +250,170 @@ describe("App Integration", () => {
     // No mock matches, request goes to proxy
     // Proxy forwards to target which returns 404 or error
     expect([404, 502]).toContain(res.status);
+  });
+
+  describe("CORS", () => {
+    it("responds 204 to preflight without forwarding, with CORS headers", async () => {
+      const mockFs = createMockFs({ "scenarios.json": JSON.stringify({ rules: [] }) });
+      const app = createApp(createContext({ fs: mockFs, cors: true }));
+
+      const res = await request(app)
+        .options("/api/anything")
+        .set("Origin", "http://localhost:3000")
+        .set("Access-Control-Request-Method", "GET")
+        .set("Access-Control-Request-Headers", "Authorization,X-Custom");
+
+      expect(res.status).toBe(204);
+      expect(res.headers["access-control-allow-origin"]).toBe(
+        "http://localhost:3000"
+      );
+      expect(res.headers["access-control-allow-methods"]).toContain("GET");
+      expect(res.headers["access-control-max-age"]).toBe("86400");
+    });
+
+    it("adds Access-Control-Allow-Origin to mocked responses when cors enabled", async () => {
+      const mockFs = createMockFs({
+        "scenarios.json": JSON.stringify({
+          rules: [
+            {
+              method: "GET",
+              match: "/test",
+              enabled: true,
+              active_scenario: "success",
+              scenarios: { success: { status: 200, json: { ok: true } } },
+            },
+          ],
+        }),
+      });
+
+      const app = createApp(createContext({ fs: mockFs, cors: true }));
+      const res = await request(app)
+        .get("/api/test")
+        .set("Origin", "http://localhost:3000");
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ ok: true });
+      expect(res.headers["access-control-allow-origin"]).toBe(
+        "http://localhost:3000"
+      );
+      expect(res.headers["access-control-allow-credentials"]).toBe("true");
+    });
+
+    it("reflects the request Origin when config.origin is auto (scenarios.json)", async () => {
+      const mockFs = createMockFs({
+        "scenarios.json": JSON.stringify({
+          rules: [
+            {
+              method: "GET",
+              match: "/echo",
+              enabled: true,
+              active_scenario: "ok",
+              scenarios: { ok: { json: { ok: true } } },
+            },
+          ],
+          cors: { enabled: true, origin: "auto" },
+        }),
+      });
+
+      const app = createApp(createContext({ fs: mockFs }));
+      const res = await request(app)
+        .get("/api/echo")
+        .set("Origin", "http://example.test");
+
+      expect(res.headers["access-control-allow-origin"]).toBe(
+        "http://example.test"
+      );
+      expect(res.headers["vary"]).toMatch(/Origin/);
+    });
+
+    it("echoes Access-Control-Request-Headers on preflight when allowedHeaders is auto", async () => {
+      const mockFs = createMockFs({ "scenarios.json": JSON.stringify({ rules: [] }) });
+      const app = createApp(createContext({ fs: mockFs, cors: true }));
+
+      const res = await request(app)
+        .options("/api/anything")
+        .set("Origin", "http://localhost:3000")
+        .set("Access-Control-Request-Method", "POST")
+        .set("Access-Control-Request-Headers", "X-One,X-Two");
+
+      expect(res.status).toBe(204);
+      expect(res.headers["access-control-allow-headers"]).toBe("X-One,X-Two");
+    });
+
+    it("adds no CORS headers when cors is disabled (backwards compat)", async () => {
+      const mockFs = createMockFs({
+        "scenarios.json": JSON.stringify({
+          rules: [
+            {
+              method: "GET",
+              match: "/plain",
+              enabled: true,
+              active_scenario: "ok",
+              scenarios: { ok: { json: { ok: true } } },
+            },
+          ],
+        }),
+      });
+
+      const app = createApp(createContext({ fs: mockFs }));
+      const res = await request(app)
+        .get("/api/plain")
+        .set("Origin", "http://localhost:3000");
+
+      expect(res.status).toBe(200);
+      expect(res.headers["access-control-allow-origin"]).toBeUndefined();
+      expect(res.headers["access-control-allow-credentials"]).toBeUndefined();
+      expect(res.headers["access-control-allow-methods"]).toBeUndefined();
+    });
+
+    it("omits Allow-Credentials when origin resolves to *", async () => {
+      const mockFs = createMockFs({
+        "scenarios.json": JSON.stringify({
+          rules: [
+            {
+              method: "GET",
+              match: "/wild",
+              enabled: true,
+              active_scenario: "ok",
+              scenarios: { ok: { json: { ok: true } } },
+            },
+          ],
+          cors: { enabled: true, origin: "*", credentials: true },
+        }),
+      });
+
+      const app = createApp(createContext({ fs: mockFs }));
+      const res = await request(app)
+        .get("/api/wild")
+        .set("Origin", "http://localhost:3000");
+
+      expect(res.headers["access-control-allow-origin"]).toBe("*");
+      expect(res.headers["access-control-allow-credentials"]).toBeUndefined();
+      expect(res.headers["vary"]).toBeUndefined();
+    });
+
+    it("sets Vary: Origin on mocked responses when origin is reflected", async () => {
+      const mockFs = createMockFs({
+        "scenarios.json": JSON.stringify({
+          rules: [
+            {
+              method: "GET",
+              match: "/v",
+              enabled: true,
+              active_scenario: "ok",
+              scenarios: { ok: { json: { ok: true } } },
+            },
+          ],
+          cors: { enabled: true, origin: "auto" },
+        }),
+      });
+
+      const app = createApp(createContext({ fs: mockFs }));
+      const res = await request(app)
+        .get("/api/v")
+        .set("Origin", "http://example.test");
+
+      expect(res.headers["vary"]).toMatch(/Origin/);
+    });
   });
 });
