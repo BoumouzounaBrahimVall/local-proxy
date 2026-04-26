@@ -1,10 +1,13 @@
 import express, { Express } from "express";
+import { createCorsMiddleware } from "./middleware/corsMiddleware";
 import { createMockMiddleware } from "./middleware/mockMiddleware";
 import { createProxyMiddlewareFactory } from "./middleware/proxyMiddleware";
 import type { AppContext } from "./types";
 
 export function createApp(context: AppContext): Express {
   const app = express();
+
+  app.use(createCorsMiddleware(context));
 
   app.use(context.apiPrefix, createMockMiddleware(context));
 
