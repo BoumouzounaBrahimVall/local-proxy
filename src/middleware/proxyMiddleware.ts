@@ -1,3 +1,4 @@
+import http from "http";
 import https from "https";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import type { Logger } from "../types";
@@ -47,16 +48,19 @@ export function handleProxyError(
   }
 }
 
-const noKeepAliveAgent = new https.Agent({ keepAlive: false });
+const httpAgent = new http.Agent({ keepAlive: false });
+const httpsAgent = new https.Agent({ keepAlive: false });
 
 export function createProxyMiddlewareFactory(options: ProxyMiddlewareOptions) {
   const { target, apiPrefix, logger = console } = options;
+
+  const agent = new URL(target).protocol === "http:" ? httpAgent : httpsAgent;
 
   return createProxyMiddleware({
     target,
     changeOrigin: true,
     secure: false,
-    agent: noKeepAliveAgent,
+    agent,
     pathRewrite: (path) => {
       const pathname = getPathname(path);
       if (pathname.startsWith(apiPrefix)) return pathname;
