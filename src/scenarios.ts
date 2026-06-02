@@ -79,11 +79,20 @@ export function matchRule(
       ? rule.match
       : `/${rule.match}`;
 
-    const result = getMatchFn(normalizedMatch)(requestPath);
-    if (!result) continue;
-
     const scenario = rule.scenarios[rule.active_scenario];
     if (!scenario) continue;
+
+    if (requestPath === normalizedMatch) {
+      return { rule, scenario, params: {} };
+    }
+
+    let result;
+    try {
+      result = getMatchFn(normalizedMatch)(requestPath);
+    } catch {
+      continue;
+    }
+    if (!result) continue;
 
     const params: Record<string, string> = {};
     for (const [key, value] of Object.entries(result.params)) {
