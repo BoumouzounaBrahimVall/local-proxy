@@ -71,6 +71,10 @@ A `*splatName` segment matches one or more path segments:
 
 This matches `/v1/files/report.pdf` as well as `/v1/files/2024/january/report.pdf`.
 
+**Case sensitivity**
+
+Path matching is case-sensitive. `/api/users` and `/API/Users` are treated as different paths.
+
 **Rule precedence**
 
 Rules are evaluated in order. Place more specific (literal) rules before param rules to give them priority:

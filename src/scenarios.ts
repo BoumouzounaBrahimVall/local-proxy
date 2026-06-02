@@ -8,7 +8,7 @@ const matchFnCache = new Map<string, ReturnType<typeof match>>();
 function getMatchFn(pattern: string): ReturnType<typeof match> {
   let fn = matchFnCache.get(pattern);
   if (!fn) {
-    fn = match(pattern, { decode: decodeURIComponent });
+    fn = match(pattern, { decode: decodeURIComponent, sensitive: true });
     matchFnCache.set(pattern, fn);
   }
   return fn;
