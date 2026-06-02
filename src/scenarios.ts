@@ -5,10 +5,18 @@ import type { ScenariosConfig, Rule, Scenario, FileSystem } from "./types";
 
 const matchFnCache = new Map<string, ReturnType<typeof match>>();
 
+function safeDecodeURIComponent(s: string): string {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
+}
+
 function getMatchFn(pattern: string): ReturnType<typeof match> {
   let fn = matchFnCache.get(pattern);
   if (!fn) {
-    fn = match(pattern, { decode: decodeURIComponent, sensitive: true });
+    fn = match(pattern, { decode: safeDecodeURIComponent, sensitive: true });
     matchFnCache.set(pattern, fn);
   }
   return fn;
