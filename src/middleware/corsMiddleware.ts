@@ -19,7 +19,20 @@ export function createCorsMiddleware(context: AppContext) {
   const loader = createScenarioLoader(context.fs, context.basePath);
 
   return (req: Request, res: Response, next: NextFunction): void => {
-    const cors = resolveCorsConfig(context, loader);
+    let cors: CorsConfig | null;
+    try {
+      cors = resolveCorsConfig(context, loader);
+    } catch (err) {
+      context.logger.error(
+        "[CORS ERROR]",
+        err instanceof Error ? err.message : err,
+      );
+      res.status(500).json({
+        error: "Failed to load scenarios",
+        message: err instanceof Error ? err.message : String(err),
+      });
+      return;
+    }
     if (!cors?.enabled) {
       next();
       return;
@@ -41,12 +54,7 @@ function resolveCorsConfig(
   context: AppContext,
   loader: { load(path: string): ScenariosConfig },
 ): CorsConfig | null {
-  let scenarioCors: CorsConfig | undefined;
-  try {
-    scenarioCors = loader.load(context.scenariosPath).cors;
-  } catch {
-    scenarioCors = undefined;
-  }
+  const scenarioCors = loader.load(context.scenariosPath).cors;
 
   if (context.cors) {
     return scenarioCors ?

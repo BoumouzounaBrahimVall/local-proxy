@@ -30,5 +30,5 @@ export interface AppContext {
   logger: Logger;
   fs: FileSystem;
   basePath: string;
-  cors: boolean;
+  cors?: boolean;
 }
