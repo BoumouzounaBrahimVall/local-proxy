@@ -21,6 +21,7 @@ export function createConfig(options: Partial<CliOptions> = {}): AppConfig {
     target: options.target ?? process.env["TARGET"],
     apiPrefix: options.apiPrefix ?? process.env["API_PREFIX"] ?? "/api",
     scenariosPath: options.scenarios ?? "./scenarios.json",
+    cors: options.cors ?? false,
   };
 
   const result = appConfigSchema.safeParse(merged);

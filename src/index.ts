@@ -11,6 +11,7 @@ export {
   fileScenarioSchema,
   ruleSchema,
   scenariosConfigSchema,
+  corsConfigSchema,
 } from "./schemas";
 
 export type {
@@ -21,6 +22,7 @@ export type {
   FileScenario,
   Rule,
   ScenariosConfig,
+  CorsConfig,
   Logger,
   FileSystem,
   AppContext,
