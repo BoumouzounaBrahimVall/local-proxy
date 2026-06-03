@@ -204,6 +204,102 @@ describe("App Integration", () => {
     );
   });
 
+  it("matches path parameter rule and returns mocked response", async () => {
+    const mockFs = createMockFs({
+      "scenarios.json": JSON.stringify({
+        rules: [
+          {
+            method: "GET",
+            match: "/users/:id",
+            enabled: true,
+            active_scenario: "success",
+            scenarios: { success: { status: 200, json: { name: "Ismail" } } },
+          },
+        ],
+      }),
+    });
+
+    const app = createApp(createContext({ fs: mockFs }));
+    const res = await request(app).get("/api/users/42");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ name: "Ismail" });
+  });
+
+  it("logs path params in mocked request", async () => {
+    const mockLogger = createMockLogger();
+    const mockFs = createMockFs({
+      "scenarios.json": JSON.stringify({
+        rules: [
+          {
+            method: "GET",
+            match: "/users/:id",
+            enabled: true,
+            active_scenario: "success",
+            scenarios: { success: { status: 200, json: { name: "Ismail" } } },
+          },
+        ],
+      }),
+    });
+
+    const app = createApp(createContext({ fs: mockFs, logger: mockLogger }));
+    await request(app).get("/api/users/42");
+
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      expect.stringContaining('{"id":"42"}')
+    );
+  });
+
+  it("matches nested path parameters", async () => {
+    const mockFs = createMockFs({
+      "scenarios.json": JSON.stringify({
+        rules: [
+          {
+            method: "GET",
+            match: "/users/:id/posts/:postId",
+            enabled: true,
+            active_scenario: "success",
+            scenarios: { success: { status: 200, json: { post: true } } },
+          },
+        ],
+      }),
+    });
+
+    const app = createApp(createContext({ fs: mockFs }));
+    const res = await request(app).get("/api/users/42/posts/7");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ post: true });
+  });
+
+  it("matches wildcard *splat rule", async () => {
+    const mockFs = createMockFs({
+      "scenarios.json": JSON.stringify({
+        rules: [
+          {
+            method: "GET",
+            match: "/files/*splat",
+            enabled: true,
+            active_scenario: "success",
+            scenarios: {
+              success: {
+                file: "fixtures/report.pdf",
+                contentType: "application/pdf",
+              },
+            },
+          },
+        ],
+      }),
+      "fixtures/report.pdf": "%PDF-1.4 fake",
+    });
+
+    const app = createApp(createContext({ fs: mockFs }));
+    const res = await request(app).get("/api/files/a/b/report.pdf");
+
+    expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toMatch(/application\/pdf/);
+  });
+
   it("handles invalid scenarios.json gracefully", async () => {
     const mockFs = createMockFs({
       "scenarios.json": "invalid json",

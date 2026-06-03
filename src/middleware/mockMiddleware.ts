@@ -28,9 +28,11 @@ export function createMockMiddleware(context: AppContext) {
       return;
     }
 
-    const { rule, scenario } = match;
+    const { rule, scenario, params } = match;
+    const paramsStr =
+      Object.keys(params).length > 0 ? ` ${JSON.stringify(params)}` : "";
     context.logger.info(
-      `[MOCKED] ${req.method} ${context.apiPrefix}${req.path} -> ${rule.active_scenario}`
+      `[MOCKED] ${req.method} ${context.apiPrefix}${req.path} -> ${rule.active_scenario}${paramsStr}`
     );
 
     const respond = () => {
