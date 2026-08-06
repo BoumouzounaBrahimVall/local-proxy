@@ -73,6 +73,70 @@ TARGET=https://api.example.com PORT=3000 local-proxy
 
 A `.env` file in the working directory is loaded automatically — see `.env.example`.
 
+## Docker
+
+Run the proxy in a container instead of installing it globally.
+
+To add it to an existing stack, point the service at a published image:
+
+```yaml
+services:
+  local-proxy:
+    image: bvbmz/local-proxy:latest
+    ports:
+      - 5050:5050
+    environment:
+      TARGET: https://api.example.com
+    volumes:
+      - ./:/workspace:ro
+    init: true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+```
+
+### Building from this repository
+
+```bash
+# copy the sample env file and set your upstream
+cp .env.example .env
+
+docker compose up --build
+```
+
+Compose reads `.env` and passes `TARGET`, `PORT`, `API_PREFIX` and `SCENARIOS` to the container. `TARGET` is required — `docker compose` fails immediately if it is unset rather than starting a proxy that points nowhere.
+
+The project directory is mounted read-only at `/workspace`, so `scenarios.json` and any `fixtures/` are picked up from the host and edits apply on the next request without a rebuild.
+
+### Proxying to an API on your host machine
+
+Inside the container, `localhost` is the container itself. Use `host.docker.internal` to reach a server running on your machine:
+
+```bash
+TARGET=http://host.docker.internal:8080
+```
+
+### Without compose
+
+```bash
+docker build -t local-proxy .
+
+docker run --rm -p 5050:5050 \
+  -e TARGET=https://api.example.com \
+  -v "$PWD":/workspace:ro \
+  local-proxy
+```
+
+The image has no default command, so any CLI flag can be appended:
+
+```bash
+docker run --rm -v "$PWD":/workspace local-proxy --init
+```
+
+### Notes
+
+- `--init` needs to write `scenarios.json`, so it does not work under `docker compose` — the mount there is read-only. Use the `docker run` form above, or `local-proxy --init` on the host.
+- The container stops gracefully: `docker stop` closes the HTTP server and lets in-flight requests finish before exiting.
+
 ## scenarios.json
 
 ```json

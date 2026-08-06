@@ -46,6 +46,9 @@ environment. A flag always wins over an exported variable: resolution order is
 TARGET=https://api.example.com PORT=3000 local-proxy
 ```
 
+A `.env` file in the working directory is loaded automatically. This is also how
+the [Docker](/local-proxy/docker/) setup is configured.
+
 ## Examples
 
   ```bash

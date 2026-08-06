@@ -1,0 +1,24 @@
+services:
+  local-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: local-proxy:latest
+    container_name: local-proxy
+    # PORT drives both sides of the mapping so host and container agree
+    ports:
+      - ${PORT:-5050}:${PORT:-5050}
+    environment:
+      TARGET: ${TARGET:?TARGET is required, e.g. TARGET=https://api.example.com}
+      PORT: ${PORT:-5050}
+      API_PREFIX: ${API_PREFIX:-/api}
+      SCENARIOS: ${SCENARIOS:-./scenarios.json}
+    # mounted as a directory rather than as individual files: a bind mount of a
+    # missing file makes docker silently create a host directory in its place
+    volumes:
+      - ./:/workspace:ro
+    # reap zombies and forward signals to the node process
+    init: true
+    # this is required to allow the container to access the host machine in order to make requests to the local server
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
