@@ -1,5 +1,10 @@
 # ---- Builder : compiles the source code and generates the production build ----
-FROM node:22-alpine AS builder
+# Pinned to the *build* platform so the compile runs natively once instead of
+# once per target architecture, the second one emulated through QEMU. Safe here
+# because the output is architecture independent: the build is a plain tsup
+# compile and every production dependency is pure JavaScript, so nothing in
+# dist/ or the pruned node_modules carries a native binary.
+FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
 
 WORKDIR /app
 
