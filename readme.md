@@ -75,7 +75,12 @@ A `.env` file in the working directory is loaded automatically — see `.env.exa
 
 ## Docker
 
-Run the proxy in a container instead of installing it globally.
+Run the proxy in a container instead of installing it globally. Released images are published to both Docker Hub and the GitHub Container Registry, tagged with the package version and `latest`:
+
+```bash
+docker pull bvbmz/local-proxy:latest
+docker pull ghcr.io/boumouzounabrahimvall/local-proxy:latest
+```
 
 To add it to an existing stack, point the service at a published image:
 

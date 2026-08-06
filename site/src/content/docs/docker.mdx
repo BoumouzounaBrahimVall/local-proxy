@@ -8,6 +8,39 @@ import { Card, CardGrid } from "@astrojs/starlight/components";
 Run the proxy in a container instead of installing it globally. The image is
 built from a multi-stage `Dockerfile` and runs as an unprivileged user.
 
+## Published images
+
+Every release is published to both Docker Hub and the GitHub Container
+Registry, for `linux/amd64` and `linux/arm64`:
+
+```bash
+docker pull bvbmz/local-proxy
+docker pull ghcr.io/boumouzounabrahimvall/local-proxy
+```
+
+The two registries hold the same image. Each release is tagged with its package
+version — the same version as the npm release — and `latest` follows the most
+recent one. Pin the version in CI, where a moving `latest` would make builds
+non-reproducible.
+
+To drop the proxy into an existing stack, add a service that uses a published
+image:
+
+```yaml
+services:
+  local-proxy:
+    image: bvbmz/local-proxy:latest
+    ports:
+      - 5050:5050
+    environment:
+      TARGET: https://api.example.com
+    volumes:
+      - ./:/workspace:ro
+    init: true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+```
+
 ## Quick start
 
 The `compose.yml` in this repository builds the image from source instead, so
@@ -66,7 +99,7 @@ The compose file already maps that hostname to the host gateway.
 docker run --rm -p 5050:5050 \
   -e TARGET=https://api.example.com \
   -v "$PWD":/workspace:ro \
-  local-proxy
+  bvbmz/local-proxy
 ```
 
 Substitute `local-proxy` for the image name to run a build of your own:
