@@ -20,7 +20,7 @@ export function createConfig(options: Partial<CliOptions> = {}): AppConfig {
     port: options.port ?? parseInt(process.env["PORT"] ?? "5050", 10),
     target: options.target ?? process.env["TARGET"],
     apiPrefix: options.apiPrefix ?? process.env["API_PREFIX"] ?? "/api",
-    scenariosPath: options.scenarios ?? "./scenarios.json",
+    scenariosPath: options.scenarios ?? process.env["SCENARIOS"] ?? "./scenarios.json",
     cors: options.cors ?? false,
   };
 

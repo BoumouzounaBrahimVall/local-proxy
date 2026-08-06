@@ -1,30 +1,18 @@
 #!/usr/bin/env node
-import { program } from "commander";
 import * as fs from "fs";
 import * as path from "path";
 import { parseCliOptions, createConfig } from "./config";
 import { createApp } from "./app";
+import { buildProgram } from "./program";
 
 const packageJsonPath = path.join(__dirname, "..", "package.json");
 const packageJson = JSON.parse(
   fs.readFileSync(packageJsonPath, "utf-8")
 ) as { version: string };
 
-program
-  .name("local-proxy")
-  .description("Local development proxy with scenario-based mocking")
-  .version(packageJson.version)
-  .option("-t, --target <url>", "Upstream API URL")
-  .option("-p, --port <number>", "Port to listen on", "5050")
-  .option("-a, --api-prefix <path>", "API path prefix", "/api")
-  .option(
-    "-s, --scenarios <file>",
-    "Path to scenarios.json",
-    "./scenarios.json"
-  )
-  .option("--init", "Create a scenarios.json template in current directory")
-  .option("--cors", "Enable permissive CORS headers for browser dev use")
-  .action((rawOptions: Record<string, unknown>) => {
+const program = buildProgram(packageJson.version);
+
+program.action((rawOptions: Record<string, unknown>) => {
    
     if (!rawOptions["target"] && !rawOptions["init"]) {
       program.help();

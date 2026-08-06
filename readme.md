@@ -56,6 +56,23 @@ local-proxy [options]
 | `-h, --help` | Show help | - |
 | `-V, --version` | Show version | - |
 
+## Environment variables
+
+Every option except `--init` and `--cors` can also be set through the environment. Resolution order is **flag > environment > default**, so a flag always wins over an exported variable.
+
+| Variable | Equivalent flag | Default |
+| --- | --- | --- |
+| `TARGET` | `-t, --target` | required unless `--init` |
+| `PORT` | `-p, --port` | `5050` |
+| `API_PREFIX` | `-a, --api-prefix` | `/api` |
+| `SCENARIOS` | `-s, --scenarios` | `./scenarios.json` |
+
+```bash
+TARGET=https://api.example.com PORT=3000 local-proxy
+```
+
+A `.env` file in the working directory is loaded automatically — see `.env.example`.
+
 ## scenarios.json
 
 ```json
