@@ -25,6 +25,9 @@ RUN pnpm build && pnpm prune --prod
 # ---- Runtime : runs the production build ----
 FROM node:22-alpine AS runtime
 
+LABEL org.opencontainers.image.title="local-proxy"
+LABEL org.opencontainers.image.description="Scenario-based local API proxy for fast frontend development and test workflows."
+
 ENV NODE_ENV=production
 
 WORKDIR /app
@@ -32,7 +35,7 @@ WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/templates ./templates
-COPY package.json ./
+COPY package.json pnpm-lock.yaml ./
 
 # /workspace is the mount point for scenarios.json and fixtures, and is where
 # --init writes; it must be owned by the unprivileged user that runs the process
