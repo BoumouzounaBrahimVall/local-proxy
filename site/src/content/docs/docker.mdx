@@ -10,18 +10,15 @@ built from a multi-stage `Dockerfile` and runs as an unprivileged user.
 
 ## Published images
 
-Every release is published to both Docker Hub and the GitHub Container
-Registry, for `linux/amd64` and `linux/arm64`:
+Every release is published to Docker Hub, for `linux/amd64` and `linux/arm64`:
 
 ```bash
 docker pull bvbmz/local-proxy
-docker pull ghcr.io/boumouzounabrahimvall/local-proxy
 ```
 
-The two registries hold the same image. Each release is tagged with its package
-version — the same version as the npm release — and `latest` follows the most
-recent one. Pin the version in CI, where a moving `latest` would make builds
-non-reproducible.
+Each release is tagged with its package version — the same version as the npm
+release — and `latest` follows the most recent one. Pin the version in CI, where
+a moving `latest` would make builds non-reproducible.
 
 To drop the proxy into an existing stack, add a service that uses a published
 image:
