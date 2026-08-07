@@ -30,8 +30,6 @@ describe("buildProgram option resolution", () => {
     expect(opts["target"]).toBeUndefined();
   });
 
-  // regression: options carrying a plain default were always present in the
-  // parsed result, so these env vars were silently ignored by the CLI
   it("reads options from the environment", () => {
     process.env["PORT"] = "3000";
     process.env["TARGET"] = "https://env.example.com";

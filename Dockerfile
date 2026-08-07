@@ -1,9 +1,6 @@
 # ---- Builder : compiles the source code and generates the production build ----
-# Pinned to the *build* platform so the compile runs natively once instead of
-# once per target architecture, the second one emulated through QEMU. Safe here
-# because the output is architecture independent: the build is a plain tsup
-# compile and every production dependency is pure JavaScript, so nothing in
-# dist/ or the pruned node_modules carries a native binary.
+# Build on the native runner platform instead of emulating each target architecture.
+# Safe because the build output and dependencies are architecture-independent.
 FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
 
 WORKDIR /app
@@ -42,7 +39,6 @@ COPY package.json pnpm-lock.yaml ./
 RUN mkdir -p /workspace && chown node:node /workspace
 WORKDIR /workspace
 
-# default listening port; override with PORT or --port (compose maps both sides)
 EXPOSE 5050
 USER node
 
