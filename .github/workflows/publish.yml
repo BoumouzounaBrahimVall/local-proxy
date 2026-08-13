@@ -9,7 +9,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 env:
   NODE_VERSION: "22"
-  DOCKERHUB_IMAGE: bvbmz/local-proxy
+  DOCKERHUB_IMAGE: brahimvall/local-proxy
 
 jobs:
   publish:

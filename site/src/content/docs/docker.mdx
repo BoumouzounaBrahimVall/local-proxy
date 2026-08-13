@@ -13,7 +13,7 @@ built from a multi-stage `Dockerfile` and runs as an unprivileged user.
 Every release is published to Docker Hub, for `linux/amd64` and `linux/arm64`:
 
 ```bash
-docker pull bvbmz/local-proxy
+docker pull brahimvall/local-proxy
 ```
 
 Each release is tagged with its package version — the same version as the npm
@@ -26,7 +26,7 @@ image:
 ```yaml
 services:
   local-proxy:
-    image: bvbmz/local-proxy:latest
+    image: brahimvall/local-proxy:latest
     ports:
       - 5050:5050
     environment:
@@ -96,7 +96,7 @@ The compose file already maps that hostname to the host gateway.
 docker run --rm -p 5050:5050 \
   -e TARGET=https://api.example.com \
   -v "$PWD":/workspace:ro \
-  bvbmz/local-proxy
+  brahimvall/local-proxy
 ```
 
 Substitute `local-proxy` for the image name to run a build of your own:

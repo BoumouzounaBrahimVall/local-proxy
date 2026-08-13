@@ -78,7 +78,7 @@ A `.env` file in the working directory is loaded automatically — see `.env.exa
 Run the proxy in a container instead of installing it globally. Released images are published to Docker Hub, tagged with the package version and `latest`:
 
 ```bash
-docker pull bvbmz/local-proxy:latest
+docker pull brahimvall/local-proxy:latest
 ```
 
 To add it to an existing stack, point the service at a published image:
@@ -86,7 +86,7 @@ To add it to an existing stack, point the service at a published image:
 ```yaml
 services:
   local-proxy:
-    image: bvbmz/local-proxy:latest
+    image: brahimvall/local-proxy:latest
     ports:
       - 5050:5050
     environment:
