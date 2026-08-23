@@ -304,4 +304,4 @@ pnpm build
 
 ## License
 
-ISC
+[ISC](LICENSE.md)
