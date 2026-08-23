@@ -1,0 +1,127 @@
+---
+title: Docker
+description: Run local-proxy in a container with Docker or Docker Compose
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+Run the proxy in a container instead of installing it globally. The image is
+built from a multi-stage `Dockerfile` and runs as an unprivileged user.
+
+## Published images
+
+Every release is published to Docker Hub, for `linux/amd64` and `linux/arm64`:
+
+```bash
+docker pull brahimvall/local-proxy
+```
+
+Each release is tagged with its package version — the same version as the npm
+release — and `latest` follows the most recent one. Pin the version in CI, where
+a moving `latest` would make builds non-reproducible.
+
+To drop the proxy into an existing stack, add a service that uses a published
+image:
+
+```yaml
+services:
+  local-proxy:
+    image: brahimvall/local-proxy:latest
+    ports:
+      - 5050:5050
+    environment:
+      TARGET: https://api.example.com
+    volumes:
+      - ./:/workspace:ro
+    init: true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+```
+
+## Quick start
+
+The `compose.yml` in this repository builds the image from source instead, so
+local changes are picked up:
+
+```bash
+# copy the sample env file and set your upstream
+cp .env.example .env
+
+docker compose up --build
+```
+
+The proxy is then reachable at `http://localhost:5050/api`, the same as a local
+install.
+
+## Environment variables
+
+Compose reads `.env` and passes these through to the container. Every one of
+them maps to a CLI flag, and resolution order is **flag > environment >
+default**.
+
+| Variable | Equivalent flag | Default |
+| --- | --- | --- |
+| `TARGET` | `-t, --target` | required |
+| `PORT` | `-p, --port` | `5050` |
+| `API_PREFIX` | `-a, --api-prefix` | `/api` |
+| `SCENARIOS` | `-s, --scenarios` | `./scenarios.json` |
+
+`TARGET` has no default: `docker compose` fails immediately with an explanatory
+message if it is unset, rather than starting a proxy that points nowhere.
+
+`PORT` drives both sides of the port mapping, so changing it in `.env` is enough
+— host and container stay in agreement.
+
+## Scenarios and fixtures
+
+The project directory is mounted read-only at `/workspace`, which is the
+container's working directory. `scenarios.json` and any `fixtures/` are read
+from the host, and because the scenarios file is re-read on every request,
+edits take effect immediately — no rebuild, no restart.
+
+## Proxying to an API on your host machine
+
+Inside the container, `localhost` refers to the container itself. Use
+`host.docker.internal` to reach a server running on your machine:
+
+```bash
+TARGET=http://host.docker.internal:8080
+```
+
+The compose file already maps that hostname to the host gateway.
+
+## Without Compose
+
+```bash
+docker run --rm -p 5050:5050 \
+  -e TARGET=https://api.example.com \
+  -v "$PWD":/workspace:ro \
+  brahimvall/local-proxy
+```
+
+Substitute `local-proxy` for the image name to run a build of your own:
+
+```bash
+docker build -t local-proxy .
+```
+
+The image declares no default command, so any CLI flag can be appended to
+`docker run`:
+
+```bash
+# writable mount, so --init can create the file
+docker run --rm -v "$PWD":/workspace local-proxy --init
+```
+
+## Notes
+
+<CardGrid>
+  <Card title="--init needs a writable mount" icon="warning">
+    The Compose mount is read-only, so `--init` fails there. Use the `docker
+    run` form above, or run `local-proxy --init` on the host.
+  </Card>
+  <Card title="Graceful shutdown" icon="approve-check">
+    `docker stop` closes the HTTP server and lets in-flight requests finish
+    before the process exits.
+  </Card>
+</CardGrid>

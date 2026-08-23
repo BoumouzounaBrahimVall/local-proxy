@@ -29,6 +29,26 @@ import { Card, CardGrid } from "@astrojs/starlight/components";
 | `-h, --help` | Show help | - |
 | `-V, --version` | Show version | - |
 
+## Environment variables
+
+Every option above except `--init` and `--cors` can also be set through the
+environment. A flag always wins over an exported variable: resolution order is
+**flag > environment > default**.
+
+| Variable | Equivalent flag |
+| --- | --- |
+| `TARGET` | `-t, --target` |
+| `PORT` | `-p, --port` |
+| `API_PREFIX` | `-a, --api-prefix` |
+| `SCENARIOS` | `-s, --scenarios` |
+
+```bash
+TARGET=https://api.example.com PORT=3000 local-proxy
+```
+
+A `.env` file in the working directory is loaded automatically. This is also how
+the [Docker](/local-proxy/docker/) setup is configured.
+
 ## Examples
 
   ```bash
