@@ -293,6 +293,24 @@ local-proxy --target https://api.example.com --cors
 
 `--cors` forces `enabled: true` regardless of the scenarios file; other fields in the `cors` block still apply. When CORS is on, preflight `OPTIONS` requests are short-circuited with `204`, mocked responses receive CORS headers, and upstream CORS headers are stripped from proxied responses to avoid duplicates.
 
+## Claude Code skill
+
+[`skills/local-proxy-mock`](skills/local-proxy-mock) is a [Claude Code skill](https://docs.claude.com/en/docs/claude-code/skills) that sets up local-proxy for you. It works for web front ends, mobile apps and backend services calling other services. Ask Claude Code to "mock this endpoint" and it does the following:
+
+- finds the request path and the response shape in your code, and asks only for what it cannot find;
+- writes `scenarios.json` and a `switch.sh` script in a temporary folder outside your repo;
+- starts the proxy and checks the mock and the forwarding with `curl`;
+- tells you how to point your client at the proxy;
+- switches scenarios or stops the proxy when you ask.
+
+Install it for all your projects:
+
+```bash
+npx degit BoumouzounaBrahimVall/local-proxy/skills/local-proxy-mock ~/.claude/skills/local-proxy-mock
+```
+
+To share it with a team, install it in the project instead, at `.claude/skills/local-proxy-mock`, and commit it.
+
 ## Development
 
 ```bash
